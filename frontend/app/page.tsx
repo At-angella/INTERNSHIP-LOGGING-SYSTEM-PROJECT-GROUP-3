@@ -1,33 +1,69 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { LogIn, UserPlus } from 'lucide-react';
+
+interface FeatureCardProps {
+  title: string;
+  description: string;
+  icon: string;
+}
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc font-sans dark:bg-grey">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-grey sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zc-50">
-            To get started, edit the page apperance.tsx file.You can put your names or what you want people to see, like Group 3 project members ... 
+    <div className="flex flex-col min-h-screen items-center justify-center p-4">
+      <main className="flex flex-col items-center justify-center w-full max-w-5xl text-center space-y-12">
+        <div className="space-y-6 animate-in fade-in duration-1000">
+          <div className="inline-block px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary font-medium text-sm mb-4 backdrop-blur-md">
+            Internship Logging & Evaluation System
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Elevate Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">Internship Experience</span>
           </h1>
+          <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            The comprehensive platform for students, supervisors, and academic staff to manage, log, and evaluate internships seamlessly.
+          </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Deploy Now
-          </a>
+
+        <div className="flex flex-col sm:flex-row gap-6 w-full max-w-md mx-auto">
+          <Link href="/login" className="btn-primary flex items-center justify-center gap-2 group w-full text-lg">
+            <LogIn className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            Sign In
+          </Link>
+          <Link href="/register" className="glass-card flex items-center justify-center gap-2 group w-full text-lg px-6 py-3 font-semibold text-slate-800 dark:text-slate-100 border hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors">
+            <UserPlus className="w-5 h-5 group-hover:scale-110 transition-transform text-primary" />
+            Register
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 w-full opacity-0 animate-[fade-in_1s_ease-out_0.5s_forwards]">
+          <FeatureCard 
+            title="Weekly Logbooks"
+            description="Students can easily submit and track their weekly activities, reflections, and hours worked."
+            icon="📝"
+          />
+          <FeatureCard 
+            title="Supervisor Reviews"
+            description="Workplace supervisors can review logs, provide feedback, and rate performance efficiently."
+            icon="✅"
+          />
+          <FeatureCard 
+            title="Academic Evaluations"
+            description="Final automated weighted scoring and evaluation by academic supervisors."
+            icon="📊"
+          />
         </div>
       </main>
+    </div>
+  );
+}
+
+function FeatureCard({ title, description, icon }: FeatureCardProps) {
+  return (
+    <div className="glass-card p-8 flex flex-col items-center text-center space-y-4 hover:border-primary/50 group cursor-default">
+      <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+        <span className="group-hover:rotate-12 transition-transform duration-300 inline-block">{icon}</span>
+      </div>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
+      <p className="text-slate-600 dark:text-slate-400">{description}</p>
     </div>
   );
 }

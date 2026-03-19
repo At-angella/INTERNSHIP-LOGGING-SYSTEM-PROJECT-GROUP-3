@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
-:root {
-  --background: #6d1111;
-  --foreground: #171717;
+@theme {
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-secondary: #f43f5e;
+  --color-secondary-hover: #e11d48;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #6d1111;
-    --foreground: #080303;
+    --background: #020617;
+    --foreground: #f8fafc;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(228, 100%, 74%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(335, 100%, 74%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(335, 100%, 74%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(228, 100%, 74%, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(228, 100%, 74%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(335, 100%, 74%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(335, 100%, 74%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(228, 100%, 74%, 0.1) 0px, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-xl rounded-2xl;
+  }
+  
+  .glass-card {
+    @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg border border-white/30 dark:border-slate-700/50 shadow-lg rounded-xl transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-200 text-slate-900 dark:text-slate-100;
+  }
+  
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl bg-primary hover:bg-[var(--color-primary-hover)] text-white font-semibold transition-all duration-300 shadow-md hover:shadow-primary/50 transform hover:-translate-y-0.5;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 rounded-xl bg-secondary hover:bg-[var(--color-secondary-hover)] text-white font-semibold transition-all duration-300 shadow-md hover:shadow-secondary/50 transform hover:-translate-y-0.5;
+  }
 }
