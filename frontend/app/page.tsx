@@ -19,7 +19,7 @@ export default function Home() {
             Elevate Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">Internship Experience</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            The comprehensive platform for students, supervisors, and academic staff to manage, log, and evaluate internships seamlessly.
+            Bob the Builder, can wwe fix it.
           </p>
         </div>
 
