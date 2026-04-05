@@ -129,5 +129,64 @@ class CustomUser(AbstractUser):
 
     objects = CustomUserManager()
 
+    def clean(self):
+        super().clean()
+
+        # ── Email domain validation
+        if self.email and self.role:
+            required_domain = self.ROLE_EMAIL_DOMAINS.get(self.role)
+            if required_domain and not self.email.endswith(required_domain):
+                raise ValidationError({
+                    'email': (
+                        f"Email for '{self.get_role_display()}' must use "
+                        f"'{required_domain}'. Got: '{self.email}'"
+                    )
+                })
+
+        # ── Student-specific field enforcement
+        if self.role == 'STUDENT':
+            required_student_fields = {
+                'student_id': self.student_id,
+                'registration_number': self.registration_number,
+                'college': self.college,
+                'program': self.program,
+                'phone_number': self.phone_number,
+            }
+            missing = [
+                field for field, value in required_student_fields.items()
+                if not value
+            ]
+            if missing:
+                raise ValidationError({
+                    field: "This field is required for students."
+                    for field in missing
+                })
+
+        # Non-students must NOT have student fields
+        # supervisors/admins won't have stray student data
+        if self.role != 'STUDENT':
+            student_only_fields = ['student_id', 'registration_number', 'college', 'program']
+            for field in student_only_fields:
+                if getattr(self, field):
+                    raise ValidationError({
+                        field: f"This field is only applicable to students."
+                    })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.email} ({self.role})"
+        if self.role == 'STUDENT':
+            return f"{self.get_full_name()} ({self.registration_number})"
+        return f"{self.email} ({self.get_role_display()})"
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['role']),
+            models.Index(fields=['student_id']),
+            models.Index(fields=['registration_number']),
+        ]
