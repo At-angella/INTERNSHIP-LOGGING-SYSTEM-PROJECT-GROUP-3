@@ -78,3 +78,24 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser=True.")
         
         return self.create_user(email, password, **extra_fields)
+    
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('ADMIN', 'Admin'),
+        ('STUDENT', 'Student'),
+        ('ACADEMIC_SUPERVISOR', 'Academic Supervisor'),
+        ('WORKPLACE_SUPERVISOR', 'Workplace Supervisor'),
+    ]
+
+    username = None  # Remove the username field
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    must_change_password = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['role']
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return f"{self.email} ({self.role})"
