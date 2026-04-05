@@ -80,6 +80,16 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
     
 class CustomUser(AbstractUser):
+
+    """
+    Custom user model with role-based access control.
+    Roles:
+    - STUDENT: Intern student (logs activities, views evaluations)
+    - WORKPLACE_SUPERVISOR: Guides intern at workplace (reviews logs, provides feedback)
+    - ACADEMIC_SUPERVISOR: Faculty supervisor (evaluates performance)
+    - ADMIN: Internship administrator (manages placements, evaluations)
+    """
+
     ROLE_CHOICES = [
         ('ADMIN', 'Admin'),
         ('STUDENT', 'Student'),
@@ -87,10 +97,23 @@ class CustomUser(AbstractUser):
         ('WORKPLACE_SUPERVISOR', 'Workplace Supervisor'),
     ]
 
-    username = None  # Remove the username field
+    ROLE_EMAIL_DOMAINS = {
+        'ADMIN': '@mak.ac.ug',
+        'ACADEMIC_SUPERVISOR': '@mak.ac.ug',
+        'WORKPLACE_SUPERVISOR': '@mak.ac.ug',
+        'STUDENT': '@students.mak.ac.ug',
+    }
+
+    ADMIN_ONLY_ROLES = {'ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR'}
+
+    # Fields needed for the user model
+    username = None
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     must_change_password = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=10)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['role']
