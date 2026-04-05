@@ -106,7 +106,7 @@ class CustomUser(AbstractUser):
 
     ADMIN_ONLY_ROLES = {'ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR'}
 
-    # Fields needed for the user model
+    # Fields needed for all the user model
     username = None
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
@@ -114,9 +114,18 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     must_change_password = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    #Student specific fields
+    student_id = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="Student ID number e.g. 260012345")
+    registration_number = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="Registration number e.g. 25/U/12345/EVE")
+    college = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. CoCIS, CoCIT, CoHES, CoNAS, CoVET")
+    program = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. BSc Computer Science")
+
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['role']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
 
     objects = CustomUserManager()
 
