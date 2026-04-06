@@ -155,7 +155,7 @@ class CustomUser(AbstractUser):
                     )
                 })
 
-        # ── Student-specific field enforcement
+        # Student-specific field enforcement
         if self.role == 'STUDENT':
             required_student_fields = {
                 'student_id': self.student_id,
@@ -171,6 +171,24 @@ class CustomUser(AbstractUser):
             if missing:
                 raise ValidationError({
                     field: "This field is required for students."
+                    for field in missing
+                })
+            
+        # Academic Supervisor field enforcement
+        if self.role == 'ACADEMIC_SUPERVISOR':
+            required_academic_fields = {
+                'staff_id': self.staff_id,
+                'faculty': self.faculty,
+                'department': self.department,
+                'specialization': self.specialization,
+            }
+            missing = [
+                field for field, value in required_academic_fields.items()
+                if not value
+            ]
+            if missing:
+                raise ValidationError({
+                    field: "This field is required for academic supervisors."
                     for field in missing
                 })
 
