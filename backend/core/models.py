@@ -211,13 +211,21 @@ class CustomUser(AbstractUser):
 
         # Non-students must NOT have student fields
         # supervisors/admins won't have stray student data
-        if self.role != 'STUDENT':
-            student_only_fields = ['student_id', 'registration_number', 'college', 'program']
-            for field in student_only_fields:
-                if getattr(self, field):
-                    raise ValidationError({
-                        field: f"This field is only applicable to students."
-                    })
+        student_only = ['student_id', 'registration_number', 'college', 'program']
+        academic_only = ['staff_id', 'faculty', 'department', 'specialization', 'max_students']
+        workplace_only = ['job_title', 'workplace_department', 'years_of_experience']
+        role_field_map = {
+            'STUDENT': academic_only + workplace_only,
+            'ACADEMIC_SUPERVISOR': student_only + workplace_only,
+            'WORKPLACE_SUPERVISOR': student_only + academic_only,
+            'ADMIN': student_only + academic_only + workplace_only,
+        }
+        forbidden_fields = role_field_map.get(self.role, [])
+        for field in forbidden_fields:
+            if getattr(self, field):
+                raise ValidationError({
+                    field: f"This field is not applicable to '{self.get_role_display()}'."
+                })
 
     def save(self, *args, **kwargs):
         self.full_clean()
