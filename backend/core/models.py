@@ -240,8 +240,30 @@ class CustomUser(AbstractUser):
         verbose_name = "User"
         verbose_name_plural = "Users"
         indexes = [
+            # ── Shared ───────────────────────────────────────────────
             models.Index(fields=['email']),
             models.Index(fields=['role']),
+            models.Index(fields=['phone_number']),
+
+            # ── Student ──────────────────────────────────────────────
             models.Index(fields=['student_id']),
             models.Index(fields=['registration_number']),
+            models.Index(fields=['college']),
+            models.Index(fields=['program']),
+
+            # ── Academic Supervisor ──────────────────────────────────
+            models.Index(fields=['staff_id']),
+            models.Index(fields=['faculty']),
+            models.Index(fields=['specialization']),
+            models.Index(fields=['max_students']),
+
+            # ── Workplace Supervisor ─────────────────────────────────
+            models.Index(fields=['workplace_department']),
+            models.Index(fields=['years_of_experience']),
+
+            # ── Composite indexes (multi-field queries) ───────────────
+            models.Index(fields=['role', 'faculty'],          name='idx_role_faculty'),
+            models.Index(fields=['role', 'specialization'],   name='idx_role_specialization'),
+            models.Index(fields=['role', 'max_students'],     name='idx_role_max_students'),
+            models.Index(fields=['role', 'workplace_department'], name='idx_role_workplace_dept'),
         ]
