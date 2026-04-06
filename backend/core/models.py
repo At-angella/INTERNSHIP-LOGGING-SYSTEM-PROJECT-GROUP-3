@@ -123,6 +123,18 @@ class CustomUser(AbstractUser):
     college = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. CoCIS, CoCIT, CoHES, CoNAS, CoVET")
     program = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. BSc Computer Science")
 
+    # Academic Supervisor fields
+    staff_id = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="University staff ID e.g. STF/2024/001")
+    faculty = models.CharField(max_length=255, null=False, blank=False, help_text="Faculty/College the supervisor belongs to")
+    department = models.CharField(max_length=255, null=False,blank=False,help_text="Official department within the university e.g. Computer Science, Electrical Engineering")
+    specialization = models.CharField(max_length=255, null=False, blank=False, help_text="Area of specialization e.g. Software Engineering, Data Science")
+    max_students = models.PositiveIntegerField(null=False, blank=False, default=5, help_text="Maximum number of interns this supervisor can handle at once")
+
+    # Workplace Supervisor fields 
+    job_title = models.CharField(max_length=255, null=False, blank=False, help_text="Supervisor's position at the workplace e.g. Senior Software Engineer")
+    workplace_department = models.CharField(max_length=255, null=False, blank=False,help_text="Department within the workplace e.g. IT, Finance, HR")
+    years_of_experience = models.PositiveIntegerField(null=False, blank=False,help_text="Years of professional experience")
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
