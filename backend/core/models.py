@@ -173,7 +173,7 @@ class CustomUser(AbstractUser):
                     field: "This field is required for students."
                     for field in missing
                 })
-            
+
         # Academic Supervisor field enforcement
         if self.role == 'ACADEMIC_SUPERVISOR':
             required_academic_fields = {
@@ -189,6 +189,23 @@ class CustomUser(AbstractUser):
             if missing:
                 raise ValidationError({
                     field: "This field is required for academic supervisors."
+                    for field in missing
+                })
+
+        # Workplace Supervisor field enforcement
+        if self.role == 'WORKPLACE_SUPERVISOR':
+            required_workplace_fields = {
+                'job_title': self.job_title,
+                'workplace_department': self.workplace_department,
+                'years_of_experience': self.years_of_experience,
+            }
+            missing = [
+                field for field, value in required_workplace_fields.items()
+                if not value
+            ]
+            if missing:
+                raise ValidationError({
+                    field: "This field is required for workplace supervisors."
                     for field in missing
                 })
 
