@@ -539,3 +539,58 @@ class SupervisorReview(models.Model):
         indexes = [
             models.Index(fields=['approval_status']),
         ]
+
+# EVALUATION CRITERIA MODEL
+
+class EvaluationCriteria(models.Model):
+    CATEGORY_CHOICES = [
+        ('TECHNICAL', 'Technical Skills'),
+        ('SOFT_SKILLS', 'Soft Skills'),
+        ('ATTENDANCE', 'Attendance'),
+        ('CONDUCT', 'Professional Conduct'),
+    ]
+
+    department = models.ForeignKey(
+        AcademicDepartment,
+        on_delete=models.CASCADE,
+        related_name='evaluation_criteria'
+    )
+    
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField()
+    weight = models.FloatField(
+        help_text="Weight in percentage (e.g., 40, 30, 30)"
+    )
+    max_score = models.FloatField(default=100)
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.weight}%)"
+
+    def clean(self):
+        """Validate weight doesn't exceed 100%."""
+        total_weight = self.department.evaluation_criteria.filter(
+            is_active=True
+        ).exclude(pk=self.pk).aggregate(
+            total=models.Sum('weight')
+        )['total'] or 0
+        
+        if total_weight + self.weight > 100:
+            raise ValidationError(
+                f"Total weight would exceed 100% (current: {total_weight}%)"
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Evaluation Criteria"
+        ordering = ['category', 'name']
+        indexes = [
+            models.Index(fields=['department', 'is_active']),
+        ]
