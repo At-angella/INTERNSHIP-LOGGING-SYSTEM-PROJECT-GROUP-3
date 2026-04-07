@@ -486,3 +486,56 @@ class WeeklyLog(models.Model):
                 name='unique_placement_week'
             )
         ]
+
+# SUPERVISOR REVIEW MODEL
+
+class SupervisorReview(models.Model):
+    RATING_CHOICES = [
+        (1, 'Poor'),
+        (2, 'Below Average'),
+        (3, 'Average'),
+        (4, 'Good'),
+        (5, 'Excellent'),
+    ]
+
+    log = models.OneToOneField(
+        WeeklyLog,
+        on_delete=models.CASCADE,
+        related_name='supervisor_review'
+    )
+    reviewer = models.ForeignKey(
+        CustomUser,
+        on_delete=models.PROTECT,
+        related_name='supervisor_reviews',
+        limit_choices_to={'role': 'WORKPLACE_SUPERVISOR'}
+    )
+    
+    performance_rating = models.IntegerField(choices=RATING_CHOICES)
+    attendance_rating = models.IntegerField(choices=RATING_CHOICES)
+    attitude_rating = models.IntegerField(choices=RATING_CHOICES)
+    
+    comments = models.TextField()
+    recommendations = models.TextField(blank=True)
+    
+    # Approval workflow
+    approval_status = models.CharField(
+        max_length=15,
+        choices=[
+            ('APPROVED', 'Approved'),
+            ('REJECTED', 'Rejected'),
+            ('PENDING', 'Pending'),
+        ],
+        default='PENDING'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Review of Week {self.log.week_number} by {self.reviewer.email}"
+
+    class Meta:
+        verbose_name_plural = "Supervisor Reviews"
+        indexes = [
+            models.Index(fields=['approval_status']),
+        ]
