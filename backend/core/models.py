@@ -594,3 +594,98 @@ class EvaluationCriteria(models.Model):
         indexes = [
             models.Index(fields=['department', 'is_active']),
         ]
+
+# EVALUATION MODEL
+
+class Evaluation(models.Model):
+    placement = models.OneToOneField(
+        InternshipPlacement,
+        on_delete=models.CASCADE,
+        related_name='evaluation'
+    )
+    evaluator = models.ForeignKey(
+        CustomUser,
+        on_delete=models.PROTECT,
+        related_name='evaluations',
+        limit_choices_to={'role': 'ACADEMIC_SUPERVISOR'}
+    )
+    
+    # Scores for each criteria
+    technical_score = models.FloatField(null=True, blank=True)
+    soft_skills_score = models.FloatField(null=True, blank=True)
+    attendance_score = models.FloatField(null=True, blank=True)
+    conduct_score = models.FloatField(null=True, blank=True)
+    
+    # Calculated weighted score
+    total_weighted_score = models.FloatField(null=True, blank=True)
+    final_grade = models.CharField(max_length=2, null=True, blank=True)  # A, B, C, etc.
+    
+    # Comments
+    summary_comments = models.TextField(blank=True)
+    recommendation = models.TextField(blank=True)
+    
+    # Status
+    is_submitted = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    submitted_at = models.DateTimeField(null=True, blank=False)
+
+    def calculate_total_score(self):
+        """
+        Calculate weighted total score based on active criteria weights.
+        Formula: (Technical × 0.4) + (SoftSkills × 0.3) + (Attendance × 0.3)
+        """
+        criteria = self.placement.department.evaluation_criteria.filter(is_active=True)
+        
+        total = 0
+        for criterion in criteria:
+            category = criterion.category
+            score = None
+            
+            if category == 'TECHNICAL':
+                score = self.technical_score
+            elif category == 'SOFT_SKILLS':
+                score = self.soft_skills_score
+            elif category == 'ATTENDANCE':
+                score = self.attendance_score
+            elif category == 'CONDUCT':
+                score = self.conduct_score
+            
+            if score is not None:
+                weight = criterion.weight / 100
+                total += score * weight
+        
+        return round(total, 2)
+
+    def determine_grade(self):
+        """Convert numeric score to letter grade."""
+        if self.total_weighted_score is None:
+            return None
+        
+        score = self.total_weighted_score
+        if score >= 90:
+            return 'A'
+        elif score >= 80:
+            return 'B'
+        elif score >= 70:
+            return 'C'
+        elif score >= 60:
+            return 'D'
+        else:
+            return 'F'
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate total score and grade on save."""
+        self.total_weighted_score = self.calculate_total_score()
+        self.final_grade = self.determine_grade()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Evaluation of {self.placement.student.email}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['placement']),
+            models.Index(fields=['is_submitted']),
+        ]
