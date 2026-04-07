@@ -267,3 +267,54 @@ class CustomUser(AbstractUser):
             models.Index(fields=['role', 'max_students'],     name='idx_role_max_students'),
             models.Index(fields=['role', 'workplace_department'], name='idx_role_workplace_dept'),
         ]
+
+# ACADEMIC DEPARTMENT MODEL
+
+class AcademicDepartment(models.Model):
+    name = models.CharField(max_length=255, unique=True, null=False, blank=False, help_text="Name of the academic department e.g. Computer Science")
+    faculty = models.CharField(max_length=255, null=False, blank=False, help_text="Faculty/College the department belongs to e.g. CoCIS")
+    head = models.OneToOneField(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='department_head',
+        limit_choices_to={'role': 'ACADEMIC_SUPERVISOR'}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.faculty})"
+
+    class Meta:
+        verbose_name = "Academic Department"
+        verbose_name_plural = "Academic Departments"
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['faculty']),
+            models.Index(fields=['name', 'faculty'], name='idx_name_faculty'),
+        ]
+
+# INTERN WORKPLACE MODEL
+
+class Workplace(models.Model):
+    name = models.CharField(max_length=255, unique=True, null=False, blank=False, help_text="Name of the workplace e.g. XYZ Corporation")
+    location = models.CharField(max_length=255, null=False, blank=False, help_text="Physical location of the workplace e.g. Kampala, Uganda")
+    industry = models.CharField(max_length=255, null=False, blank=False, help_text="Industry sector e.g. Information Technology")
+    contact_email = models.EmailField(null=False, blank=False, help_text="Contact email for internship coordination at the workplace")
+    contact_phone = models.CharField(max_length=10, null=False, blank=False, help_text="Contact phone number for internship coordination at the workplace")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.location})"
+
+    class Meta:
+        verbose_name = "Intern Workpace"
+        verbose_name_plural = "Intern Workplaces"
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['location']),
+            models.Index(fields=['industry']),
+        ]
