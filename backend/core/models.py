@@ -318,3 +318,103 @@ class Workplace(models.Model):
             models.Index(fields=['location']),
             models.Index(fields=['industry']),
         ]
+
+# INTERNSHIP PLACEMENT MODEL
+
+class InternshipPlacement(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending Approval'),
+        ('APPROVED', 'Approved'),
+        ('ACTIVE', 'Active'),
+        ('COMPLETED', 'Completed'),
+        ('REJECTED', 'Rejected'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+
+    student = models.ForeignKey(
+        CustomUser,
+        on_delete=models.PROTECT,
+        related_name='internship_placements',
+        limit_choices_to={'role': 'STUDENT'}
+    )
+    workplace = models.ForeignKey(
+        Workplace,
+        on_delete=models.PROTECT,
+        related_name='internship_placements'
+    )
+    academic_supervisor = models.ForeignKey(
+        CustomUser,
+        on_delete=models.PROTECT,
+        related_name='supervised_placements',
+        limit_choices_to={'role': 'ACADEMIC_SUPERVISOR'}
+    )
+    workplace_supervisor = models.ForeignKey(
+        CustomUser,
+        on_delete=models.PROTECT,
+        related_name='workplace_supervised_placements',
+        limit_choices_to={'role': 'WORKPLACE_SUPERVISOR'}
+    )
+    academic_department = models.ForeignKey(
+        AcademicDepartment,
+        on_delete=models.PROTECT,
+        related_name='placements'
+    )
+    
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='PENDING')
+    
+    position_title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_placements',
+        limit_choices_to={'role': 'ADMIN'}
+    )
+
+    def clean(self):
+        """Validate placement dates and avoid overlaps."""
+        if self.start_date >= self.end_date:
+            raise ValidationError("End date must be after start date.")
+        
+        # Check for overlapping placements for the same student
+        overlapping = InternshipPlacement.objects.filter(
+            student=self.student,
+            status__in=['APPROVED', 'ACTIVE', 'COMPLETED']
+        ).exclude(pk=self.pk).filter(
+            start_date__lte=self.end_date,
+            end_date__gte=self.start_date
+        )
+        
+        if overlapping.exists():
+            raise ValidationError(
+                "Student already has an overlapping internship placement."
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.student.email} at {self.workplace.name}"
+
+    class Meta:
+        verbose_name_plural = "Internship Placements"
+        indexes = [
+            models.Index(fields=['student', 'status']),
+            models.Index(fields=['start_date', 'end_date']),
+            models.Index(fields=['status']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'workplace', 'start_date', 'end_date'],
+                name='unique_student_workplace_period'
+            )
+        ]
