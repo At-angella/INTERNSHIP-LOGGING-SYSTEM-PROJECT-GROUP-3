@@ -689,3 +689,52 @@ class Evaluation(models.Model):
             models.Index(fields=['placement']),
             models.Index(fields=['is_submitted']),
         ]
+
+# AUDIT LOG MODEL
+
+class AuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('LOG_CREATED', 'Weekly Log Created'),
+        ('LOG_SUBMITTED', 'Weekly Log Submitted'),
+        ('LOG_REVIEWED', 'Weekly Log Reviewed'),
+        ('LOG_APPROVED', 'Weekly Log Approved'),
+        ('LOG_REJECTED', 'Weekly Log Rejected'),
+        ('REVIEW_COMPLETED', 'Supervisor Review Completed'),
+        ('EVALUATION_CREATED', 'Evaluation Created'),
+        ('EVALUATION_SUBMITTED', 'Evaluation Submitted'),
+        ('PLACEMENT_APPROVED', 'Placement Approved'),
+        ('PLACEMENT_REJECTED', 'Placement Rejected'),
+        ('USER_CREATED', 'User Created'),
+        ('USER_ROLE_CHANGED', 'User Role Changed'),
+    ]
+
+    actor = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='audit_logs'
+    )
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    
+    content_type = models.CharField(max_length=50, help_text="e.g., 'WeeklyLog', 'Evaluation'")
+    object_id = models.IntegerField()
+    
+    old_value = models.JSONField(null=True, blank=True)
+    new_value = models.JSONField(null=True, blank=True)
+    
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.action} by {self.actor} at {self.timestamp}"
+
+    class Meta:
+        verbose_name_plural = "Audit Logs"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['actor', 'timestamp']),
+            models.Index(fields=['action']),
+            models.Index(fields=['timestamp']),
+        ]
