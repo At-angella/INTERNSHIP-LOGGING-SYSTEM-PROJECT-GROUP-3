@@ -418,3 +418,71 @@ class InternshipPlacement(models.Model):
                 name='unique_student_workplace_period'
             )
         ]
+
+# WEEKLY LOGBOOK MODEL
+
+class WeeklyLog(models.Model):
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('SUBMITTED', 'Submitted for Review'),
+        ('REVIEWED', 'Under Review'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+        ('REVISE', 'Revision Required'),
+    ]
+
+    placement = models.ForeignKey(
+        InternshipPlacement,
+        on_delete=models.CASCADE,
+        related_name='weekly_logs'
+    )
+    
+    week_number = models.IntegerField()
+    week_start_date = models.DateField()
+    week_end_date = models.DateField()
+    
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='DRAFT')
+    
+    # Log content
+    activities_performed = models.TextField()
+    skills_acquired = models.TextField()
+    challenges_faced = models.TextField(blank=False)
+    lessons_learned = models.TextField(blank=False)
+    hours_worked = models.FloatField(default=0, help_text="Total hours worked in the week")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    submitted_at = models.DateTimeField(null=True, blank=False)
+    reviewed_at = models.DateTimeField(null=True, blank=False)
+    approved_at = models.DateTimeField(null=True, blank=False)
+
+    def clean(self):
+        """Validate week dates overlap with placement period."""
+        if not (self.placement.start_date <= self.week_start_date and 
+                self.week_end_date <= self.placement.end_date):
+            raise ValidationError(
+                "Week dates must fall within internship placement period."
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Week {self.week_number} - {self.placement.student.email}"
+
+    class Meta:
+        verbose_name_plural = "Weekly Logs"
+        ordering = ['-week_number']
+        indexes = [
+            models.Index(fields=['placement', 'week_number']),
+            models.Index(fields=['status']),
+            models.Index(fields=['submitted_at']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['placement', 'week_number'],
+                name='unique_placement_week'
+            )
+        ]
