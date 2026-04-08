@@ -147,3 +147,83 @@ def log_weekly_log_changes(sender, instance, created, **kwargs):
     if updates:
         # update() to avoid triggering this signal again recursively
         WeeklyLog.objects.filter(pk=instance.pk).update(**updates)
+
+# PLACEMENT SIGNALS
+
+PLACEMENT_STATUS_ACTION_MAP = {
+    'APPROVED':  'PLACEMENT_APPROVED',
+    'REJECTED':  'PLACEMENT_REJECTED',
+    'ACTIVE':    'PLACEMENT_APPROVED',
+    'COMPLETED': 'PLACEMENT_APPROVED',
+    'CANCELLED': 'PLACEMENT_REJECTED',
+}
+
+@receiver(pre_save, sender=InternshipPlacement)
+def validate_placement_state_transition(sender, instance, **kwargs):
+    old = _get_old_instance(sender, instance)
+    if not old:
+        return
+
+    old_status = old.status
+    new_status = instance.status
+
+    if old_status == new_status:
+        return
+
+    valid_transitions = {
+        'PENDING':   ['APPROVED', 'REJECTED'],
+        'APPROVED':  ['ACTIVE', 'CANCELLED'],
+        'ACTIVE':    ['COMPLETED', 'CANCELLED'],
+        'COMPLETED': [],
+        'REJECTED':  [],
+        'CANCELLED': [],
+    }
+
+    if new_status not in valid_transitions.get(old_status, []):
+        raise ValidationError(
+            f"Invalid placement transition: '{old_status}' → '{new_status}'. "
+            f"Allowed: {valid_transitions.get(old_status, []) or 'none (terminal state)'}."
+        )
+
+
+@receiver(post_save, sender=InternshipPlacement)
+def log_placement_changes(sender, instance, created, **kwargs):
+    """Log placement creation and status changes."""
+    if created:
+        AuditLog.objects.create(
+            actor=instance.student,
+            action='PLACEMENT_APPROVED',
+            content_type='InternshipPlacement',
+            object_id=instance.id,
+            old_value=None,
+            new_value={
+                'student_id': instance.student.id,
+                'workplace': instance.workplace.name,
+                'status': instance.status,
+                'start_date': str(instance.start_date),
+                'end_date': str(instance.end_date),
+            }
+        )
+        return
+
+    action = PLACEMENT_STATUS_ACTION_MAP.get(instance.status)
+    if not action:
+        return
+
+    AuditLog.objects.create(
+        actor=instance.approved_by,
+        action=action,
+        content_type='InternshipPlacement',
+        object_id=instance.id,
+        old_value={'status': instance.tracker.previous('status') if hasattr(instance, 'tracker') else None},
+        new_value={
+            'status': instance.status,
+            'approved_by': instance.approved_by.email if instance.approved_by else None,
+        }
+    )
+
+    # Auto-set approved_at timestamp
+    if instance.status == 'APPROVED' and not instance.approved_at:
+        InternshipPlacement.objects.filter(pk=instance.pk).update(
+            approved_at=timezone.now()
+        )
