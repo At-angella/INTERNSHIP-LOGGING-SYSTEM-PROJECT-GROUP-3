@@ -227,3 +227,66 @@ def log_placement_changes(sender, instance, created, **kwargs):
         InternshipPlacement.objects.filter(pk=instance.pk).update(
             approved_at=timezone.now()
         )
+
+# SUPERVISOR REVIEW SIGNALS
+
+@receiver(post_save, sender=SupervisorReview)
+def log_supervisor_review(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    AuditLog.objects.create(
+        actor=instance.reviewer,
+        action='REVIEW_COMPLETED',
+        content_type='SupervisorReview',
+        object_id=instance.id,
+        old_value=None,
+        new_value={
+            'log_id': instance.log.id,
+            'week_number': instance.log.week_number,
+            'performance_rating': instance.performance_rating,
+            'attendance_rating': instance.attendance_rating,
+            'attitude_rating': instance.attitude_rating,
+            'approval_status': instance.approval_status,
+        }
+    )
+
+# EVALUATION SIGNALS
+
+@receiver(post_save, sender=Evaluation)
+def log_evaluation_changes(sender, instance, created, **kwargs):
+    if created:
+        AuditLog.objects.create(
+            actor=instance.evaluator,
+            action='EVALUATION_CREATED',
+            content_type='Evaluation',
+            object_id=instance.id,
+            old_value=None,
+            new_value={
+                'placement_id': instance.placement.id,
+                'evaluator': instance.evaluator.email,
+            }
+        )
+        return
+
+    # Only log when actually submitted — not on every score update
+    if instance.is_submitted:
+        AuditLog.objects.create(
+            actor=instance.evaluator,
+            action='EVALUATION_SUBMITTED',
+            content_type='Evaluation',
+            object_id=instance.id,
+            old_value={'is_submitted': False},
+            new_value={
+                'is_submitted': True,
+                'total_score': instance.total_weighted_score,
+                'final_grade': instance.final_grade,
+                'submitted_at': str(timezone.now()),
+            }
+        )
+
+        # Auto-set submitted_at timestamp
+        if not instance.submitted_at:
+            Evaluation.objects.filter(pk=instance.pk).update(
+                submitted_at=timezone.now()
+            )
