@@ -58,7 +58,7 @@ class InternshipPlacementAdmin(admin.ModelAdmin):
 class WeeklyLogAdmin(admin.ModelAdmin):
     list_display = ('placement', 'week_number', 'status', 'submitted_at')
     list_filter = ('status',)
-    search_fields = ('placement__student__email',)
+    search_fields = ('placement__student__email', 'placement__workplace__name')
 
 
 @admin.register(SupervisorReview)
