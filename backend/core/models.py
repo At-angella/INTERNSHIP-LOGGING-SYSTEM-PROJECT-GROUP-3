@@ -124,20 +124,20 @@ class CustomUser(AbstractUser):
     program = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. BSc Computer Science")
 
     # Academic Supervisor fields
-    staff_id = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="University staff ID e.g. STF/2024/001")
-    faculty = models.CharField(max_length=255, null=False, blank=False, help_text="Faculty/College the supervisor belongs to")
-    department = models.CharField(max_length=255, null=False,blank=False,help_text="Official department within the university e.g. Computer Science, Electrical Engineering")
-    specialization = models.CharField(max_length=255, null=False, blank=False, help_text="Area of specialization e.g. Software Engineering, Data Science")
-    max_students = models.PositiveIntegerField(null=False, blank=False, default=5, help_text="Maximum number of interns this supervisor can handle at once")
+    staff_id = models.CharField(max_length=20, unique=True, null=True, blank=True, help_text="University staff ID e.g. STF/2024/001")
+    faculty = models.CharField(max_length=255, null=True, blank=True, help_text="Faculty/College the supervisor belongs to")
+    department = models.CharField(max_length=255, null=True, blank=True, help_text="Official department within the university e.g. Computer Science, Electrical Engineering")
+    specialization = models.CharField(max_length=255, null=True, blank=True, help_text="Area of specialization e.g. Software Engineering, Data Science")
+    max_students = models.PositiveIntegerField(null=True, blank=True, default=0, help_text="Maximum number of interns this supervisor can handle at once")
 
     # Workplace Supervisor fields 
-    job_title = models.CharField(max_length=255, null=False, blank=False, help_text="Supervisor's position at the workplace e.g. Senior Software Engineer")
-    workplace_department = models.CharField(max_length=255, null=False, blank=False,help_text="Department within the workplace e.g. IT, Finance, HR")
-    years_of_experience = models.PositiveIntegerField(null=False, blank=False,help_text="Years of professional experience")
+    job_title = models.CharField(max_length=255, null=True, blank=True, help_text="Supervisor's position at the workplace e.g. Senior Software Engineer")
+    workplace_department = models.CharField(max_length=255, null=True, blank=True,help_text="Department within the workplace e.g. IT, Finance, HR")
+    years_of_experience = models.PositiveIntegerField(null=True, blank=True,help_text="Years of professional experience")
 
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()
 
@@ -222,13 +222,15 @@ class CustomUser(AbstractUser):
         }
         forbidden_fields = role_field_map.get(self.role, [])
         for field in forbidden_fields:
-            if getattr(self, field):
+            value = getattr(self, field, None)
+            if value is not None and value != '' and value != 0:
                 raise ValidationError({
                     field: f"This field is not applicable to '{self.get_role_display()}'."
                 })
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        if not self.is_superuser:
+            self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):

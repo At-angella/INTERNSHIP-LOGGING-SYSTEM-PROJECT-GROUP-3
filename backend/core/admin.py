@@ -36,8 +36,8 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(AcademicDepartment)
 class AcademicDepartmentAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'head')
-    search_fields = ('name', 'code')
+    list_display = ('faculty', 'name', 'head')
+    search_fields = ('name', 'faculty')
 
 
 @admin.register(Workplace)
