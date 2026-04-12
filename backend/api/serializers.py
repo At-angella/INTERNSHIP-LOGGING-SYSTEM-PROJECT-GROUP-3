@@ -744,3 +744,21 @@ class EvaluationUpdateSerializer(serializers.ModelSerializer):
                     for k in missing
                 })
         return data
+    
+# AUDIT LOG SERIALIZER
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    """
+    Read-only audit log and system generated only.
+    """
+    actor = UserSerializer(read_only=True)
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+
+    class Meta:
+        model = AuditLog
+        fields = (
+            'id', 'actor', 'action', 'action_display', 'content_type',
+            'object_id', 'old_value', 'new_value',
+            'ip_address', 'timestamp'
+        )
+        read_only_fields = fields
