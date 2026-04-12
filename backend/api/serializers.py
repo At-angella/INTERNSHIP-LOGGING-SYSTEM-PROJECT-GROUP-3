@@ -623,3 +623,124 @@ class EvaluationCriteriaSerializer(serializers.ModelSerializer):
                 "Weight must be between 1 and 100."
             )
         return value
+    
+# EVALUATION SERIALIZERS
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    """
+    Full evaluation detail.
+    Students will only see this after is_submitted is True.
+    """
+    placement = InternshipPlacementSerializer(read_only=True)
+    evaluator = AcademicSupervisorSerializer(read_only=True)
+    status_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Evaluation
+        fields = (
+            'id', 'placement', 'evaluator',
+            'technical_score', 'soft_skills_score',
+            'attendance_score', 'conduct_score',
+            'total_weighted_score', 'final_grade',
+            'summary_comments', 'recommendation',
+            'is_submitted', 'status_display',
+            'created_at', 'updated_at', 'submitted_at'
+        )
+        read_only_fields = (
+            'id', 'total_weighted_score', 'final_grade',
+            'created_at', 'updated_at', 'submitted_at'
+        )
+
+    def get_status_display(self, obj):
+        return "Submitted" if obj.is_submitted else "Draft"
+
+class EvaluationCreateSerializer(serializers.ModelSerializer):
+    """
+    Used for creating a new evaluation.
+    One evaluation per placement enforced by model.
+    """
+    class Meta:
+        model = Evaluation
+        fields = (
+            'placement', 'technical_score', 'soft_skills_score',
+            'attendance_score', 'conduct_score',
+            'summary_comments', 'recommendation',
+        )
+
+    def validate_placement(self, value):
+        request = self.context.get('request')
+        # Supervisor can only evaluate their assigned students
+        if value.academic_supervisor != request.user:
+            raise serializers.ValidationError(
+                "You can only evaluate students assigned to you."
+            )
+        # Placement must be completed before evaluation
+        if value.status != 'COMPLETED':
+            raise serializers.ValidationError(
+                "Evaluation can only be submitted for completed placements."
+            )
+        # Prevent duplicate evaluations
+        if hasattr(value, 'evaluation'):
+            raise serializers.ValidationError(
+                "An evaluation already exists for this placement."
+            )
+        return value
+
+    def validate(self, data):
+        scores = [
+            data.get('technical_score'),
+            data.get('soft_skills_score'),
+            data.get('attendance_score'),
+            data.get('conduct_score'),
+        ]
+        for score in scores:
+            if score is not None and not (0 <= score <= 100):
+                raise serializers.ValidationError(
+                    "All scores must be between 0 and 100."
+                )
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['evaluator'] = request.user
+        return super().create(validated_data)
+
+
+class EvaluationUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used for updating scores before submission.
+    Once is_submitted is True the evaluation is locked.
+    """
+    class Meta:
+        model = Evaluation
+        fields = (
+            'technical_score', 'soft_skills_score',
+            'attendance_score', 'conduct_score',
+            'summary_comments', 'recommendation', 'is_submitted'
+        )
+
+    def validate_is_submitted(self, value):
+        """Once submitted, cannot be unsubmitted."""
+        if self.instance.is_submitted and not value:
+            raise serializers.ValidationError(
+                "A submitted evaluation cannot be unsubmitted."
+            )
+        return value
+
+    def validate(self, data):
+        # All scores must be present before submitting
+        if data.get('is_submitted'):
+            instance = self.instance
+            required_scores = {
+                'technical_score': data.get('technical_score', instance.technical_score),
+                'soft_skills_score': data.get('soft_skills_score', instance.soft_skills_score),
+                'attendance_score': data.get('attendance_score', instance.attendance_score),
+                'conduct_score': data.get('conduct_score', instance.conduct_score),
+            }
+            missing = [k for k, v in required_scores.items() if v is None]
+            if missing:
+                raise serializers.ValidationError({
+                    k: "This score is required before submitting the evaluation."
+                    for k in missing
+                })
+        return data
