@@ -132,6 +132,118 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
+class SupervisorRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Used by ADMIN to register Academic or Workplace supervisors.
+    Password is auto-generated and returned once to the admin.
+    """
+    temp_password = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'id', 'email', 'first_name', 'last_name', 'role', 'phone_number',
+            # Academic supervisor fields
+            'staff_id', 'faculty', 'department', 'specialization', 'max_students',
+            # Workplace supervisor fields
+            'job_title', 'workplace_department', 'years_of_experience',
+            # Returned after creation
+            'temp_password',
+        )
+        read_only_fields = ('id', 'temp_password')
+
+    def validate_role(self, value):
+        """Only supervisor roles are allowed through this serializer."""
+        if value not in ['ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR']:
+            raise serializers.ValidationError(
+                "This endpoint only registers Academic or Workplace Supervisors."
+            )
+        return value
+
+    def validate_email(self, value):
+        if not value.endswith('@mak.ac.ug'):
+            raise serializers.ValidationError(
+                "Supervisor email must use the '@mak.ac.ug' domain."
+            )
+        return value
+
+    def validate(self, data):
+        role = data.get('role')
+
+        # Enforce required fields per supervisor role
+        if role == 'ACADEMIC_SUPERVISOR':
+            required = ['staff_id', 'faculty', 'department', 'specialization']
+            missing = [f for f in required if not data.get(f)]
+            if missing:
+                raise serializers.ValidationError({
+                    f: "This field is required for Academic Supervisors."
+                    for f in missing
+                })
+
+        if role == 'WORKPLACE_SUPERVISOR':
+            required = ['job_title', 'workplace_department', 'years_of_experience']
+            missing = [f for f in required if not data.get(f)]
+            if missing:
+                raise serializers.ValidationError({
+                    f: "This field is required for Workplace Supervisors."
+                    for f in missing
+                })
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user, temp_password = CustomUser.objects.create_user(
+            created_by=request.user,
+            **validated_data
+        )
+        # Attached temp_password to the instance so it appears in the response
+        user.temp_password = temp_password
+        return user
+
+
+class LoginSerializer(serializers.Serializer):
+    """
+    Used for login.
+    Returns tokens + user info.
+    """
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Used when a supervisor logs in for the first time
+    and must change their temporary password.
+    Also used by any user wanting to update their password.
+    """
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_new_password = serializers.CharField(write_only=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect.")
+        return value
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError({
+                'confirm_new_password': "New passwords do not match."
+            })
+        try:
+            validate_password(data['new_password'], self.context['request'].user)
+        except ValidationError as e:
+            raise serializers.ValidationError({'new_password': list(e.messages)})
+        return data
+
+    def save(self):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.must_change_password = False
+        user.save()
+        return user
+    
 # ACADEMIC DEPARTMENT & WORKPLACE
 
 class AcademicDepartmentSerializer(serializers.ModelSerializer):
