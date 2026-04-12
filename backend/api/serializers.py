@@ -522,3 +522,71 @@ class LogStatusUpdateSerializer(serializers.ModelSerializer):
                 f"From '{instance.status}' you can only move to '{allowed}'."
             )
         return value
+    
+# SUPERVISOR REVIEW SERIALIZERS
+
+class SupervisorReviewSerializer(serializers.ModelSerializer):
+    """
+    Full review detail with nested reviewer info.
+    """
+    reviewer = UserSerializer(read_only=True)
+    performance_rating_display = serializers.CharField(
+        source='get_performance_rating_display', read_only=True
+    )
+    attendance_rating_display = serializers.CharField(
+        source='get_attendance_rating_display', read_only=True
+    )
+    attitude_rating_display = serializers.CharField(
+        source='get_attitude_rating_display', read_only=True
+    )
+
+    class Meta:
+        model = SupervisorReview
+        fields = (
+            'id', 'log', 'reviewer',
+            'performance_rating', 'performance_rating_display',
+            'attendance_rating', 'attendance_rating_display',
+            'attitude_rating', 'attitude_rating_display',
+            'comments', 'recommendations',
+            'approval_status', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'reviewer', 'created_at', 'updated_at')
+
+
+class SupervisorReviewCreateSerializer(serializers.ModelSerializer):
+    """
+    Used for creating a supervisor review.
+    Can only review logs assigned to them.
+    """
+    class Meta:
+        model = SupervisorReview
+        fields = (
+            'log', 'performance_rating', 'attendance_rating',
+            'attitude_rating', 'comments', 'recommendations', 'approval_status'
+        )
+
+    def validate_log(self, value):
+        request = self.context.get('request')
+
+        # the supervisor is reviewing their own assigned intern's log
+        if value.placement.workplace_supervisor != request.user:
+            raise serializers.ValidationError(
+                "You can only review logs for interns assigned to you."
+            )
+        # Log must be submitted before it can be reviewed
+        if value.status != 'SUBMITTED':
+            raise serializers.ValidationError(
+                "You can only review logs that have been submitted."
+            )
+        # Prevents duplicate reviews
+        if hasattr(value, 'supervisor_review'):
+            raise serializers.ValidationError(
+                "This log has already been reviewed."
+            )
+        return value
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        # Auto-assign reviewer to the logged-in supervisor
+        validated_data['reviewer'] = request.user
+        return super().create(validated_data)
