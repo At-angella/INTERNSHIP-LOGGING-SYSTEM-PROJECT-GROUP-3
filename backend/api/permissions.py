@@ -20,3 +20,15 @@ class IsAdmin(BasePermission):
             request.user.is_authenticated and
             request.user.role == 'ADMIN'
         )
+    
+class IsStudent(BasePermission):
+    """
+    Allows access only to STUDENTS.
+    Used for: creating weekly logs, viewing own placement,
+    viewing own evaluations.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role == 'STUDENT'
+        )
