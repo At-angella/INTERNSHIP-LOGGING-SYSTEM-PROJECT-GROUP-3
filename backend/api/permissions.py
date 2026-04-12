@@ -44,3 +44,15 @@ class IsAcademicSupervisor(BasePermission):
             request.user.is_authenticated and
             request.user.role == 'ACADEMIC_SUPERVISOR'
         )
+    
+class IsWorkplaceSupervisor(BasePermission):
+    """
+    Allows access only to WORKPLACE_SUPERVISORS.
+    Used for: reviewing weekly logs, submitting supervisor
+    reviews, viewing assigned interns' logs.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role == 'WORKPLACE_SUPERVISOR'
+        )
