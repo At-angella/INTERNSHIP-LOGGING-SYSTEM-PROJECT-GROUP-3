@@ -38,3 +38,18 @@ class AcademicSupervisorSerializer(serializers.ModelSerializer):
             'specialization', 'max_students', 'is_active', 'date_joined'
         )
         read_only_fields = fields
+
+class WorkplaceSupervisorSerializer(serializers.ModelSerializer):
+    """
+    Detailed workplace supervisor profile.
+    """
+    role_display = serializers.CharField(source='get_role_display', read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'id', 'email', 'first_name', 'last_name', 'role', 'role_display',
+            'phone_number', 'job_title', 'workplace_department',
+            'years_of_experience', 'is_active', 'date_joined'
+        )
+        read_only_fields = fields
