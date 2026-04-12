@@ -391,3 +391,134 @@ class PlacementStatusUpdateSerializer(serializers.ModelSerializer):
             instance.approved_by = request.user
         instance.save()
         return instance
+
+# WEEKLY LOG SERIALIZERS
+
+class WeeklyLogSerializer(serializers.ModelSerializer):
+    """
+    Full weekly log detail.
+    """
+    placement = InternshipPlacementSerializer(read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    supervisor_review = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WeeklyLog
+        fields = (
+            'id', 'placement', 'week_number', 'week_start_date', 'week_end_date',
+            'status', 'status_display', 'activities_performed', 'skills_acquired',
+            'challenges_faced', 'lessons_learned', 'hours_worked',
+            'supervisor_review',
+            'created_at', 'updated_at', 'submitted_at', 'reviewed_at', 'approved_at'
+        )
+        read_only_fields = (
+            'id', 'created_at', 'updated_at',
+            'submitted_at', 'reviewed_at', 'approved_at'
+        )
+
+    def get_supervisor_review(self, obj):
+        """Inline the review if it exists, otherwise return null"""
+        try:
+            review = obj.supervisor_review
+            return SupervisorReviewSerializer(review).data
+        except Exception:
+            return None
+
+
+class WeeklyLogCreateSerializer(serializers.ModelSerializer):
+    """
+    Used for creating a new weekly log.
+    """
+    class Meta:
+        model = WeeklyLog
+        fields = (
+            'placement', 'week_number', 'week_start_date', 'week_end_date',
+            'activities_performed', 'skills_acquired',
+            'challenges_faced', 'lessons_learned', 'hours_worked',
+        )
+
+    def validate_placement(self, value):
+        request = self.context.get('request')
+        if value.student != request.user:
+            raise serializers.ValidationError(
+                "You can only create logs for your own placement."
+            )
+        if value.status not in ['APPROVED', 'ACTIVE']:
+            raise serializers.ValidationError(
+                "Logs can only be created for approved or active placements."
+            )
+        return value
+
+    def validate_hours_worked(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Hours worked cannot be negative.")
+        if value > 60:
+            raise serializers.ValidationError(
+                "Hours worked cannot exceed 60 hours in a week."
+            )
+        return value
+
+    def validate(self, data):
+        if data['week_start_date'] >= data['week_end_date']:
+            raise serializers.ValidationError({
+                'week_end_date': "Week end date must be after start date."
+            })
+        return data
+
+
+class WeeklyLogUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used for editing a log (only when DRAFT or REVISE).
+    """
+    class Meta:
+        model = WeeklyLog
+        fields = (
+            'activities_performed', 'skills_acquired',
+            'challenges_faced', 'lessons_learned', 'hours_worked',
+        )
+
+
+class LogStatusUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used for transitioning a log's status.
+    Student submits → Supervisor reviews → Academic approves.
+    """
+    class Meta:
+        model = WeeklyLog
+        fields = ('status',)
+
+    def validate_status(self, value):
+        request = self.context.get('request')
+        user = request.user
+        instance = self.instance
+
+        allowed_transitions = {
+            'STUDENT': {
+                'DRAFT': 'SUBMITTED',
+                'REVISE': 'SUBMITTED',
+            },
+            'WORKPLACE_SUPERVISOR': {
+                'SUBMITTED': ['REVIEWED', 'REVISE'],
+            },
+            'ACADEMIC_SUPERVISOR': {
+                'REVIEWED': ['APPROVED', 'REJECTED'],
+            },
+        }
+
+        role_transitions = allowed_transitions.get(user.role, {})
+        allowed = role_transitions.get(instance.status)
+
+        if allowed is None:
+            raise serializers.ValidationError(
+                f"Your role cannot transition a log from '{instance.status}'."
+            )
+
+        if isinstance(allowed, list) and value not in allowed:
+            raise serializers.ValidationError(
+                f"Cannot transition from '{instance.status}' to '{value}'."
+            )
+        if isinstance(allowed, str) and value != allowed:
+            raise serializers.ValidationError(
+                f"From '{instance.status}' you can only move to '{allowed}'."
+            )
+        return value
