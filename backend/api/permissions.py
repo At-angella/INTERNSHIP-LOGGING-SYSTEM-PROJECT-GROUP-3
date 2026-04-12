@@ -56,3 +56,56 @@ class IsWorkplaceSupervisor(BasePermission):
             request.user.is_authenticated and
             request.user.role == 'WORKPLACE_SUPERVISOR'
         )
+    
+# COMBINED ROLE PERMISSIONS
+
+class IsAdminOrAcademicSupervisor(BasePermission):
+    """
+    Allows ADMIN or ACADEMIC_SUPERVISORS.
+    Used for: viewing all placements in a department,
+    managing evaluation criteria, submitting final evaluations.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role in ['ADMIN', 'ACADEMIC_SUPERVISOR']
+        )
+
+
+class IsAdminOrWorkplaceSupervisor(BasePermission):
+    """
+    Allows ADMIN or WORKPLACE_SUPERVISORS.
+    Used for: reviewing submitted weekly logs,
+    submitting supervisor reviews.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role in ['ADMIN', 'WORKPLACE_SUPERVISOR']
+        )
+
+
+class IsAnySupervisor(BasePermission):
+    """
+    Allows ACADEMIC_SUPERVISORS or WORKPLACE_SUPERVISORS.
+    Used for: reading student profiles, viewing
+    placement details of assigned students.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role in ['ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR']
+        )
+
+
+class IsAdminOrAnySupervisor(BasePermission):
+    """
+    Allows ADMIN, ACADEMIC_SUPERVISORS, or WORKPLACE_SUPERVISORS.
+    Used for: reading weekly logs, reading placement info.
+    Blocks students from accessing other students' data.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role in ['ADMIN', 'ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR']
+        )
