@@ -32,3 +32,15 @@ class IsStudent(BasePermission):
             request.user.is_authenticated and
             request.user.role == 'STUDENT'
         )
+    
+class IsAcademicSupervisor(BasePermission):
+    """
+    Allows access only to ACADEMIC_SUPERVISORS.
+    Used for: submitting evaluations, approving weekly logs,
+    viewing assigned students' logs.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.role == 'ACADEMIC_SUPERVISOR'
+        )
