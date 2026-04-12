@@ -115,3 +115,50 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    
+# ACADEMIC DEPARTMENT & WORKPLACE
+
+class AcademicDepartmentSerializer(serializers.ModelSerializer):
+    """
+    Used for listing and creating academic departments.
+    """
+    head = UserSerializer(read_only=True)
+    head_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(role='ACADEMIC_SUPERVISOR'),
+        source='head',
+        write_only=True,
+        required=False
+    )
+    placement_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AcademicDepartment
+        fields = (
+            'id', 'name', 'code', 'description',
+            'head', 'head_id', 'placement_count',
+            'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def get_placement_count(self, obj):
+        return obj.placements.count()
+
+
+class WorkplaceSerializer(serializers.ModelSerializer):
+    """
+    Used for listing and creating workplaces.
+    """
+    active_placements_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Workplace
+        fields = (
+            'id', 'name', 'industry', 'address', 'contact_person',
+            'contact_email', 'contact_phone', 'is_active',
+            'active_placements_count', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def get_active_placements_count(self, obj):
+        return obj.internship_placements.filter(status='ACTIVE').count()
+
