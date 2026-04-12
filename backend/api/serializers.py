@@ -590,3 +590,36 @@ class SupervisorReviewCreateSerializer(serializers.ModelSerializer):
         # Auto-assign reviewer to the logged-in supervisor
         validated_data['reviewer'] = request.user
         return super().create(validated_data)
+    
+# EVALUATION CRITERIA SERIALIZERS
+
+class EvaluationCriteriaSerializer(serializers.ModelSerializer):
+    """
+    Used for listing and managing evaluation criteria.
+    Academic supervisors can read to know how scoring works.
+    """
+    category_display = serializers.CharField(
+        source='get_category_display', read_only=True
+    )
+    department = AcademicDepartmentSerializer(read_only=True)
+    department_id = serializers.PrimaryKeyRelatedField(
+        queryset=AcademicDepartment.objects.all(),
+        source='department',
+        write_only=True
+    )
+
+    class Meta:
+        model = EvaluationCriteria
+        fields = (
+            'id', 'department', 'department_id', 'name', 'category',
+            'category_display', 'description', 'weight', 'max_score',
+            'is_active', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate_weight(self, value):
+        if value <= 0 or value > 100:
+            raise serializers.ValidationError(
+                "Weight must be between 1 and 100."
+            )
+        return value
