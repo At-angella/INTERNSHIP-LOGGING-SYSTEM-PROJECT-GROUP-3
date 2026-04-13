@@ -622,3 +622,43 @@ class WeeklyLogViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(WeeklyLogSerializer(log).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# SUPERVISOR REVIEW VIEWSET
+
+class SupervisorReviewViewSet(viewsets.ModelViewSet):
+    """
+    Supervisor review management.
+        own reviews (supervisor) or all (admin)
+        Workplace supervisor only can create reviews for their interns
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['approval_status']
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return SupervisorReviewCreateSerializer
+        return SupervisorReviewSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return SupervisorReview.objects.all()
+        elif user.role == 'WORKPLACE_SUPERVISOR':
+            return SupervisorReview.objects.filter(reviewer=user)
+        elif user.role == 'ACADEMIC_SUPERVISOR':
+            return SupervisorReview.objects.filter(
+                log__placement__academic_supervisor=user
+            )
+        elif user.role == 'STUDENT':
+            return SupervisorReview.objects.filter(
+                log__placement__student=user
+            )
+        return SupervisorReview.objects.none()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsWorkplaceSupervisor()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnReviewOrAdmin()]
+        return [IsAuthenticated(), IsOwnReviewOrAdmin()]
