@@ -29,7 +29,7 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           {/* Email Field */}
           <div className="mb-5">
-            <label className="block font-semibold mb-2" style={{ color: '#FFA500' }}>
+            <label className="block font-semibold mb-2" style={{ color: '#7bff00' }}>
               EMAIL
             </label>
             <input
@@ -39,7 +39,7 @@ const Login = () => {
               placeholder="Enter your email"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style={{ 
-                backgroundColor: '#90EE90',
+                backgroundColor: '#daee90',
                 borderColor: '#7CCD7C',
                 color: '#000370'
               }}
@@ -83,14 +83,14 @@ const Login = () => {
             type="submit"
             className="w-full py-3 rounded-lg font-semibold transition duration-200"
             style={{ 
-              backgroundColor: '#FFA500',
-              color: '#000370'
+              backgroundColor: '#1eff00',
+              color: '#047000'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#FF8C00'
+              e.currentTarget.style.backgroundColor = '#5eff00'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#FFA500'
+              e.currentTarget.style.backgroundColor = '#ff7300'
             }}
           >
             LOGIN
