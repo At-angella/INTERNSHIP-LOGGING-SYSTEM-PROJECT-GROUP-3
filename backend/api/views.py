@@ -151,3 +151,27 @@ class LogoutView(APIView):
                 {'detail': 'Invalid or expired token.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+class ChangePasswordView(APIView):
+    """
+    Change password.
+    Used for:
+    1. Supervisors forced to change temp password on first login
+    2. Any user voluntarily changing their password
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            # Issues new tokens since password changed
+            tokens = _get_tokens(request.user)
+            return Response({
+                'message': 'Password changed successfully.',
+                'tokens': tokens,
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
