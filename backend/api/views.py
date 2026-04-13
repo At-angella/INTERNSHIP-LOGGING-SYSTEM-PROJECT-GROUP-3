@@ -761,3 +761,19 @@ class EvaluationViewSet(viewsets.ModelViewSet):
         evaluation.is_submitted = True
         evaluation.save()
         return Response(EvaluationSerializer(evaluation).data, status=status.HTTP_200_OK)
+
+# AUDIT LOG VIEWSET
+
+class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Audit log — read only.
+    """
+    serializer_class = AuditLogSerializer
+    permission_classes = [IsAuthenticated, CanViewAuditLog]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['action', 'content_type', 'actor']
+    ordering_fields = ['timestamp']
+    ordering = ['-timestamp']
+
+    def get_queryset(self):
+        return AuditLog.objects.select_related('actor').all()
