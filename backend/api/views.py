@@ -302,3 +302,19 @@ class UserViewSet(viewsets.ModelViewSet):
         ]
         serializer = AcademicSupervisorSerializer(available, many=True)
         return Response(serializer.data)
+    
+# ACADEMIC DEPARTMENT VIEWSET
+
+class AcademicDepartmentViewSet(viewsets.ModelViewSet):
+    """
+    Academic Department management.
+    """
+    queryset = AcademicDepartment.objects.all()
+    serializer_class = AcademicDepartmentSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'faculty']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated()]
