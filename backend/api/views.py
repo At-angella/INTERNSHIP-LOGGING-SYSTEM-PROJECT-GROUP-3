@@ -88,3 +88,40 @@ class SupervisorRegisterView(APIView):
                 'temp_password': user.temp_password,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class LoginView(APIView):
+    """
+    Login for all roles.
+    Returns: JWT tokens + user data + must_change_password flag.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+        user = authenticate(request, username=email, password=password)
+
+        if not user:
+            return Response(
+                {'detail': 'Invalid email or password.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            return Response(
+                {'detail': 'Your account has been deactivated. Contact the administrator.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        tokens = _get_tokens(user)
+
+        return Response({
+            'message': f"Welcome back, {user.get_full_name()}!",
+            'user': _get_role_serializer(user).data,
+            'tokens': tokens,
+            'must_change_password': user.must_change_password,
+        }, status=status.HTTP_200_OK)
