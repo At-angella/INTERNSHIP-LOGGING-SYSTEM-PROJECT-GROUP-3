@@ -777,3 +777,30 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return AuditLog.objects.select_related('actor').all()
+    
+# HELPER FUNCTIONS
+
+def _get_tokens(user):
+    """
+    Generate JWT access + refresh tokens for a user.
+    """
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+def _get_role_serializer(user):
+    """Return an instantiated serializer based on the user's role."""
+    return _get_role_serializer_class(user)(user)
+
+def _get_role_serializer_class(user):
+    """
+    Used across login, registration, and profile views
+    """
+    role_map = {
+        'STUDENT': StudentSerializer,
+        'ACADEMIC_SUPERVISOR': AcademicSupervisorSerializer,
+        'WORKPLACE_SUPERVISOR': WorkplaceSupervisorSerializer,
+    }
+    return role_map.get(user.role, UserSerializer)
