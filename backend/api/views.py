@@ -200,3 +200,105 @@ class RefreshTokenView(APIView):
                 {'detail': 'Invalid or expired refresh token. Please log in again.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+        
+# USER VIEWS
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    User management.
+        ADMIN sees all, others see only themselves
+        own profile or ADMIN
+        current logged in user
+        own profile or ADMIN
+        ADMIN or supervisors see student list
+        ADMIN sees supervisor list
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['role', 'is_active', 'college', 'faculty']
+    search_fields = [
+        'email', 'first_name', 'last_name',
+        'student_id', 'registration_number', 'staff_id'
+    ]
+    ordering_fields = ['date_joined', 'email', 'first_name']
+    ordering = ['-date_joined']
+
+    def get_serializer_class(self):
+        """Return role-appropriate serializer."""
+        user = self.request.user
+        obj = self.get_object() if self.action == 'retrieve' else user
+        return _get_role_serializer_class(obj)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return CustomUser.objects.all()
+        elif user.role in ['ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR']:
+            # Supervisors see their assigned students
+            return CustomUser.objects.filter(
+                Q(pk=user.pk) |
+                Q(
+                    internship_placements__academic_supervisor=user
+                ) |
+                Q(
+                    internship_placements__workplace_supervisor=user
+                )
+            ).distinct()
+        # Students see only themselves
+        return CustomUser.objects.filter(pk=user.pk)
+
+    def get_permissions(self):
+        if self.action in ['destroy']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated(), MustChangePassword(), IsOwnProfileOrAdmin()]
+
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        # Get current logged-in user's full profile.
+        serializer = _get_role_serializer(request.user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, IsAdminOrAcademicSupervisor])
+    def students(self, request):
+        """
+        List all students.
+        Used by: Admin managing placements, supervisors viewing their interns.
+        """
+        queryset = CustomUser.objects.filter(role='STUDENT')
+        serializer = StudentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, IsAdmin])
+    def supervisors(self, request):
+        """
+        List all supervisors.
+        Used by: Admin when assigning supervisors to placements.
+        """
+        role = request.query_params.get('role')
+        queryset = CustomUser.objects.filter(
+            role__in=['ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR']
+        )
+        if role:
+            queryset = queryset.filter(role=role)
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, IsAdmin])
+    def available_supervisors(self, request):
+        """
+        List academic supervisors who still have student capacity.
+        Used by: Admin when creating a new placement — only shows
+        supervisors who haven't hit their max_students limit.
+        """
+        supervisors = CustomUser.objects.filter(
+            role='ACADEMIC_SUPERVISOR',
+            is_active=True
+        )
+        available = [
+            s for s in supervisors
+            if s.supervised_placements.filter(
+                status__in=['APPROVED', 'ACTIVE']
+            ).count() < (s.max_students or 999)
+        ]
+        serializer = AcademicSupervisorSerializer(available, many=True)
+        return Response(serializer.data)
