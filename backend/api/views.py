@@ -175,3 +175,28 @@ class ChangePasswordView(APIView):
                 'tokens': tokens,
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class RefreshTokenView(APIView):
+    """
+    Refresh access token using refresh token.
+    Returns: new access token.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response(
+                    {'detail': 'Refresh token is required.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            token = RefreshToken(refresh_token)
+            return Response({
+                'access': str(token.access_token),
+            }, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response(
+                {'detail': 'Invalid or expired refresh token. Please log in again.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
