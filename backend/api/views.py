@@ -63,3 +63,28 @@ class StudentRegisterView(APIView):
                 'tokens': tokens,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class SupervisorRegisterView(APIView):
+    """
+    Admin registers Academic or Workplace supervisors.
+    Returns: new supervisor data + temp password (shown once only).
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request):
+        serializer = SupervisorRegistrationSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': (
+                    f"Account created for {user.get_full_name()}. "
+                    f"Share these credentials securely — "
+                    f"the password will not be shown again."
+                ),
+                'user': _get_role_serializer(user).data,
+                'temp_password': user.temp_password,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
