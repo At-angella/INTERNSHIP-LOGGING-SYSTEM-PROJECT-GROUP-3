@@ -318,3 +318,20 @@ class AcademicDepartmentViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsAdmin()]
         return [IsAuthenticated()]
+    
+# WORKPLACE VIEWSET
+
+class WorkplaceViewSet(viewsets.ModelViewSet):
+    """
+    Workplace management.
+    """
+    queryset = Workplace.objects.all()
+    serializer_class = WorkplaceSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['is_active', 'industry']
+    search_fields = ['name', 'contact_person']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated()]
