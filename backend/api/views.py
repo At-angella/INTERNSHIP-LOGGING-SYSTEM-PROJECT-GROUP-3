@@ -335,3 +335,138 @@ class WorkplaceViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsAdmin()]
         return [IsAuthenticated()]
+    
+# INTERNSHIP PLACEMENT VIEWSET
+
+class InternshipPlacementViewSet(viewsets.ModelViewSet):
+    """
+    Internship placement management.
+        filtered by role
+        ADMIN only
+        own placement or ADMIN
+        ADMIN only (approve/reject)
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['status', 'department', 'workplace']
+    ordering_fields = ['start_date', 'created_at']
+    ordering = ['-start_date']
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return InternshipPlacementCreateSerializer
+        if self.action == 'update_status':
+            return PlacementStatusUpdateSerializer
+        return InternshipPlacementSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return InternshipPlacement.objects.select_related(
+                'student', 'workplace', 'academic_supervisor',
+                'workplace_supervisor', 'department'
+            ).all()
+        elif user.role == 'STUDENT':
+            return InternshipPlacement.objects.filter(student=user)
+        elif user.role in ['WORKPLACE_SUPERVISOR', 'ACADEMIC_SUPERVISOR']:
+            return InternshipPlacement.objects.filter(
+                Q(workplace_supervisor=user) | Q(academic_supervisor=user)
+            )
+        return InternshipPlacement.objects.none()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsAdmin()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated(), IsOwnPlacementOrAdmin()]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsAdmin])
+    def update_status(self, request, pk=None):
+        """
+        Update placement status.
+        Used by: Admin to approve, reject, activate, complete, or cancel placements.
+        """
+        placement = self.get_object()
+        serializer = PlacementStatusUpdateSerializer(
+            placement,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                InternshipPlacementSerializer(placement).data,
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    def approve(self, request, pk=None):
+        """
+        Approve a placement.
+        """
+        placement = self.get_object()
+        if placement.status != 'PENDING':
+            return Response(
+                {'detail': f"Cannot approve a placement with status '{placement.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        placement.status = 'APPROVED'
+        placement.approved_at = timezone.now()
+        placement.approved_by = request.user
+        placement.save()
+        return Response(
+            InternshipPlacementSerializer(placement).data,
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    def reject(self, request, pk=None):
+        """
+        Reject a placement.
+        """
+        placement = self.get_object()
+        if placement.status != 'PENDING':
+            return Response(
+                {'detail': f"Cannot reject a placement with status '{placement.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        placement.status = 'REJECTED'
+        placement.save()
+        return Response(
+            InternshipPlacementSerializer(placement).data,
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['get'])
+    def logs(self, request, pk=None):
+        """
+        Get all weekly logs for a specific placement.
+        Used by: Supervisors and admin viewing a student's full logbook.
+        """
+        placement = self.get_object()
+        logs = placement.weekly_logs.all().order_by('week_number')
+        serializer = WeeklyLogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def evaluation(self, request, pk=None):
+        """
+        Get the evaluation for a specific placement.
+        Used by: Student viewing their result, supervisor viewing their submission.
+        """
+        placement = self.get_object()
+        try:
+            evaluation = placement.evaluation
+            serializer = EvaluationSerializer(evaluation)
+            return Response(serializer.data)
+        except Evaluation.DoesNotExist:
+            return Response(
+                {'detail': 'No evaluation found for this placement.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
