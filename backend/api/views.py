@@ -662,3 +662,26 @@ class SupervisorReviewViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsOwnReviewOrAdmin()]
         return [IsAuthenticated(), IsOwnReviewOrAdmin()]
+
+# EVALUATION CRITERIA VIEWSET
+
+class EvaluationCriteriaViewSet(viewsets.ModelViewSet):
+    """
+    Evaluation criteria management.
+        Admin + Academic supervisors (read)
+    """
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['department', 'category', 'is_active']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return EvaluationCriteria.objects.all()
+        # Others only see active criteria
+        return EvaluationCriteria.objects.filter(is_active=True)
+
+    def get_serializer_class(self):
+        return EvaluationCriteriaSerializer
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsOwnEvaluationCriteriaOrAdmin()]
