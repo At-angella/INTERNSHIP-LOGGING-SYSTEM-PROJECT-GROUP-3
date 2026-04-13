@@ -125,3 +125,29 @@ class LoginView(APIView):
             'tokens': tokens,
             'must_change_password': user.must_change_password,
         }, status=status.HTTP_200_OK)
+    
+class LogoutView(APIView):
+    """
+    Logout — blacklists the refresh token and deletes tokens from its local storage.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response(
+                    {'detail': 'Refresh token is required.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {'message': 'Logged out successfully.'},
+                status=status.HTTP_200_OK
+            )
+        except TokenError:
+            return Response(
+                {'detail': 'Invalid or expired token.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
