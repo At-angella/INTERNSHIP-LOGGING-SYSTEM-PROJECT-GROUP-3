@@ -95,13 +95,6 @@ View Logs
     )
     }
 }
-const AcademicSupervisorDashboard
- = () => {
-  return (
-    <div>AcademicSupervisorDashboard
-        
-    </div>
-  )
-}
+
 
 export default AcademicSupervisorDashboard
