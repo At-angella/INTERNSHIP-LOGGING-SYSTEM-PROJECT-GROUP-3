@@ -81,8 +81,19 @@ className="text-blue-600 hover:underline"
 >
 View Logs
 </button>
-
-  
+{user.role==='admin'&&(
+<button className="text-red-600- hover:underline">Remove</button>
+)}
+</td>
+    )}
+</tr>
+    ))}
+</tbody>
+</table>
+</div>
+</div>
+    )
+    }
 }
 const AcademicSupervisorDashboard
  = () => {
