@@ -1,4 +1,5 @@
-import React from 'react'
+'use Client'
+import React ,{useEffect, useState} from 'react'
 
 const AcademicSupervisorDashboard
  = () => {
