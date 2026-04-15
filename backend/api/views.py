@@ -470,3 +470,218 @@ class InternshipPlacementViewSet(viewsets.ModelViewSet):
                 {'detail': 'No evaluation found for this placement.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+# WEEKLY LOG VIEWSET
+
+class WeeklyLogViewSet(viewsets.ModelViewSet):
+    """
+    Weekly log management.
+        filtered by role
+        Student only
+        Student (own draft logs only)
+        Student submits draft
+        Workplace supervisor marks as reviewed
+        Academic supervisor approves
+        Academic supervisor sends back for revision
+        generic status update
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['status', 'placement__department']
+    ordering_fields = ['week_number', 'submitted_at']
+    ordering = ['-week_number']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return WeeklyLogCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            return WeeklyLogUpdateSerializer
+        if self.action == 'update_status':
+            return LogStatusUpdateSerializer
+        return WeeklyLogSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return WeeklyLog.objects.select_related(
+                'placement__student',
+                'placement__workplace_supervisor',
+                'placement__academic_supervisor'
+            ).all()
+        elif user.role == 'STUDENT':
+            return WeeklyLog.objects.filter(placement__student=user)
+        elif user.role == 'WORKPLACE_SUPERVISOR':
+            return WeeklyLog.objects.filter(placement__workplace_supervisor=user)
+        elif user.role == 'ACADEMIC_SUPERVISOR':
+            return WeeklyLog.objects.filter(placement__academic_supervisor=user)
+        return WeeklyLog.objects.none()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsStudent()]
+        if self.action in ['update', 'partial_update']:
+            return [IsAuthenticated(), IsOwnLogOrSupervisorOrAdmin(), CanEditLog()]
+        return [IsAuthenticated(), IsOwnLogOrSupervisorOrAdmin()]
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStudent])
+    def submit(self, request, pk=None):
+        """
+        Student submits a draft log.
+        """
+        log = self.get_object()
+        if log.placement.student != request.user:
+            return Response(
+                {'detail': 'You can only submit your own logs.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if log.status not in ['DRAFT', 'REVISE']:
+            return Response(
+                {'detail': f"Cannot submit a log with status '{log.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        log.status = 'SUBMITTED'
+        log.save()
+        return Response(WeeklyLogSerializer(log).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsWorkplaceSupervisor])
+    def review(self, request, pk=None):
+        """
+        Workplace supervisor marks log as reviewed.
+        """
+        log = self.get_object()
+        if log.placement.workplace_supervisor != request.user:
+            return Response(
+                {'detail': 'You can only review logs for your assigned interns.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if log.status != 'SUBMITTED':
+            return Response(
+                {'detail': f"Cannot review a log with status '{log.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        log.status = 'REVIEWED'
+        log.save()
+        return Response(WeeklyLogSerializer(log).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAcademicSupervisor])
+    def approve(self, request, pk=None):
+        """
+        Academic supervisor approves a reviewed log.
+        """
+        log = self.get_object()
+        if log.placement.academic_supervisor != request.user:
+            return Response(
+                {'detail': 'You can only approve logs for your assigned students.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if log.status != 'REVIEWED':
+            return Response(
+                {'detail': f"Cannot approve a log with status '{log.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        log.status = 'APPROVED'
+        log.save()
+        return Response(WeeklyLogSerializer(log).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAcademicSupervisor])
+    def reject(self, request, pk=None):
+        """
+        Academic supervisor sends log back for revision.
+        """
+        log = self.get_object()
+        if log.placement.academic_supervisor != request.user:
+            return Response(
+                {'detail': 'You can only reject logs for your assigned students.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if log.status != 'REVIEWED':
+            return Response(
+                {'detail': f"Cannot reject a log with status '{log.status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        log.status = 'REVISE'
+        log.save()
+        return Response(
+            {'detail': 'Log sent back for revision.'},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['patch'])
+    def update_status(self, request, pk=None):
+        """
+        Generic status update with role-based transition validation.
+        """
+        log = self.get_object()
+        serializer = LogStatusUpdateSerializer(
+            log,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(WeeklyLogSerializer(log).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# SUPERVISOR REVIEW VIEWSET
+
+class SupervisorReviewViewSet(viewsets.ModelViewSet):
+    """
+    Supervisor review management.
+        own reviews (supervisor) or all (admin)
+        Workplace supervisor only can create reviews for their interns
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['approval_status']
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return SupervisorReviewCreateSerializer
+        return SupervisorReviewSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return SupervisorReview.objects.all()
+        elif user.role == 'WORKPLACE_SUPERVISOR':
+            return SupervisorReview.objects.filter(reviewer=user)
+        elif user.role == 'ACADEMIC_SUPERVISOR':
+            return SupervisorReview.objects.filter(
+                log__placement__academic_supervisor=user
+            )
+        elif user.role == 'STUDENT':
+            return SupervisorReview.objects.filter(
+                log__placement__student=user
+            )
+        return SupervisorReview.objects.none()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsWorkplaceSupervisor()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnReviewOrAdmin()]
+        return [IsAuthenticated(), IsOwnReviewOrAdmin()]
+
+# EVALUATION CRITERIA VIEWSET
+
+class EvaluationCriteriaViewSet(viewsets.ModelViewSet):
+    """
+    Evaluation criteria management.
+        Admin + Academic supervisors (read)
+    """
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['department', 'category', 'is_active']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return EvaluationCriteria.objects.all()
+        # Others only see active criteria
+        return EvaluationCriteria.objects.filter(is_active=True)
+
+    def get_serializer_class(self):
+        return EvaluationCriteriaSerializer
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsOwnEvaluationCriteriaOrAdmin()]

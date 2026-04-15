@@ -49,7 +49,7 @@ const Login = () => {
           
           {/* Password Field */}
           <div className="mb-6">
-            <label className="block font-semibold mb-2" style={{ color: '#FFA500' }}>
+            <label className="block font-semibold mb-2" style={{ color: '#e5ff00' }}>
               PASSWORD
             </label>
             <input
@@ -59,9 +59,9 @@ const Login = () => {
               placeholder="Enter your password"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
               style={{ 
-                backgroundColor: '#90EE90',
+                backgroundColor: '#c2ee90',
                 borderColor: '#7CCD7C',
-                color: '#000370'
+                color: '#003470'
               }}
               required
             />
