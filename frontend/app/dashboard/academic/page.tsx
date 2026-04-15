@@ -67,7 +67,12 @@ const AcademicSupervisorDashboard =()=>{
   <td className="p-4">{student.reg_no}</td>
   <td className="p-4">{student.logs_submitted}</td>
   <td className="p-4">
-
+<span className={`px-2 py-1 rounded text-sm ${
+student.status==='On Track'? ' bg-green-100 text-green-800':'bg-red-100 text-red-800'
+}`}>
+{student.status}
+</span>
+</td>
 
   
 }
