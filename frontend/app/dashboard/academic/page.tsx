@@ -35,7 +35,7 @@ const AcademicSupervisorDashboard =()=>{
   <p className ="text-gray-600">Welcome back, {user.name||user.email}</p>
   </div>
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <div classNmae="bg-white p-6 rounded-lg shadow border">
+  <div className="bg-white p-6 rounded-lg shadow border">
   <h3 className="text-gray-500 text-sm">Assigned Students</h3>
   <p className="text-3xl font-bold">{students.length}</p>
   </div>
@@ -43,7 +43,20 @@ const AcademicSupervisorDashboard =()=>{
  <h3 className="text-gray-500 text-sm">Completed assesments</h3>
  <p className="text-3xl font-bold text-green-600">12</p>
  </div>
- </div>
+  </div>
+  <div className="bg-white rounded-lg shadow border">
+  <div className ="p-4 border-b">
+  <h2 className="text-xl font-semibold">My Students</h2>
+  </div>
+  <table ClassNmae="w-full">
+  <thead classNmae="bg-gray-50">
+  <tr>
+  <th classNmae="text-left p-4">Name</th>
+  <th className="text-left p-4">Reg No</th>
+  <th className="text-left p-4">logs</th>
+  <th className="text-left p-4">Status</th>
+  </tr></thead></table>
+
 
   
 }
