@@ -73,6 +73,14 @@ student.status==='On Track'? ' bg-green-100 text-green-800':'bg-red-100 text-red
 {student.status}
 </span>
 </td>
+{['academic_supervisor','admin'].includes(user.role)&&(
+<td className="p-4 space-x-2">
+<button
+onClick={()=> router.push(`/dashboard/students/${student.id}`)}
+className="text-blue-600 hover:underline"
+>
+View Logs
+</button>
 
   
 }
