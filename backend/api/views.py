@@ -685,3 +685,122 @@ class EvaluationCriteriaViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         return [IsAuthenticated(), IsOwnEvaluationCriteriaOrAdmin()]
+    
+# EVALUATION VIEWSET
+
+class EvaluationViewSet(viewsets.ModelViewSet):
+    """
+    Evaluation management.
+        own evaluations filtered by role
+        Academic supervisor (own evaluations, before submission)
+        Academic supervisor submits (locks evaluation)
+    """
+    permission_classes = [IsAuthenticated, MustChangePassword]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['is_submitted', 'placement__department']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return EvaluationCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            return EvaluationUpdateSerializer
+        return EvaluationSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'ADMIN':
+            return Evaluation.objects.all()
+        elif user.role == 'ACADEMIC_SUPERVISOR':
+            return Evaluation.objects.filter(evaluator=user)
+        elif user.role == 'STUDENT':
+            # Students only see submitted evaluations
+            return Evaluation.objects.filter(
+                placement__student=user,
+                is_submitted=True
+            )
+        return Evaluation.objects.none()
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsAcademicSupervisor()]
+        if self.action in ['update', 'partial_update']:
+            return [IsAuthenticated(), IsOwnEvaluationOrAdmin()]
+        if self.action == 'destroy':
+            return [IsAuthenticated(), IsAdmin()]
+        return [IsAuthenticated(), IsOwnEvaluationOrAdmin()]
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAcademicSupervisor])
+    def submit(self, request, pk=None):
+        """
+        Submit and lock an evaluation.
+        Endpoint: POST /evaluations/{id}/submit/
+        Once submitted: student can see it, no further edits allowed.
+        Triggers signal: EVALUATION_SUBMITTED audit entry.
+        """
+        evaluation = self.get_object()
+        if evaluation.evaluator != request.user:
+            return Response(
+                {'detail': 'You can only submit your own evaluations.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if evaluation.is_submitted:
+            return Response(
+                {'detail': 'This evaluation has already been submitted.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Validate all scores are present before submitting
+        missing_scores = []
+        for field in ['technical_score', 'soft_skills_score', 'attendance_score', 'conduct_score']:
+            if getattr(evaluation, field) is None:
+                missing_scores.append(field)
+        if missing_scores:
+            return Response(
+                {'detail': f"Missing scores: {', '.join(missing_scores)}. All scores required before submitting."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        evaluation.is_submitted = True
+        evaluation.save()
+        return Response(EvaluationSerializer(evaluation).data, status=status.HTTP_200_OK)
+
+# AUDIT LOG VIEWSET
+
+class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Audit log — read only.
+    """
+    serializer_class = AuditLogSerializer
+    permission_classes = [IsAuthenticated, CanViewAuditLog]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['action', 'content_type', 'actor']
+    ordering_fields = ['timestamp']
+    ordering = ['-timestamp']
+
+    def get_queryset(self):
+        return AuditLog.objects.select_related('actor').all()
+    
+# HELPER FUNCTIONS
+
+def _get_tokens(user):
+    """
+    Generate JWT access + refresh tokens for a user.
+    """
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+def _get_role_serializer(user):
+    """Return an instantiated serializer based on the user's role."""
+    return _get_role_serializer_class(user)(user)
+
+def _get_role_serializer_class(user):
+    """
+    Used across login, registration, and profile views
+    """
+    role_map = {
+        'STUDENT': StudentSerializer,
+        'ACADEMIC_SUPERVISOR': AcademicSupervisorSerializer,
+        'WORKPLACE_SUPERVISOR': WorkplaceSupervisorSerializer,
+    }
+    return role_map.get(user.role, UserSerializer)
