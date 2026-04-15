@@ -55,7 +55,18 @@ const AcademicSupervisorDashboard =()=>{
   <th className="text-left p-4">Reg No</th>
   <th className="text-left p-4">logs</th>
   <th className="text-left p-4">Status</th>
-  </tr></thead></table>
+  {['academic_supervisor','admin'].includes(user.role)&&(
+  <th className="text-left p-4">Actions</th>
+    )}
+  </tr>
+  </thead>
+  <tbody>
+  {students.map((student:any)=>(
+  <tr key={student.id} className="border-t">
+  <td className="p-4">{student.name}</td>
+  <td className="p-4">{student.reg_no}</td>
+  <td className="p-4">{student.logs_submitted}</td>
+  <td className="p-4">
 
 
   
