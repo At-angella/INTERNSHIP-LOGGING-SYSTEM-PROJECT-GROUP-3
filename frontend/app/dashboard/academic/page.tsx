@@ -14,7 +14,15 @@ setLoading(false)
 }, [])
 return {userAgent, loading}
 }
-
+const AcademicSupervisorDashboard =()=>{
+  const{user,loading}=useAuth()
+  const router=useRouter()
+  const [students, setStudents]=usestate([])
+  useEffect(()=>{
+     if (user?.role ==='academic_supervisor'){}
+  }
+  
+}
 const AcademicSupervisorDashboard
  = () => {
   return (
