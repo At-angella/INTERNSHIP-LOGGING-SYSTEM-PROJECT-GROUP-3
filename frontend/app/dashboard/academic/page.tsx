@@ -1,24 +1,24 @@
-'use Client'
+'use client'
 import React ,{useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
 import api from '@/lib/axios'
-const useAuth=> {
+const useAuth=()=> {
   const[user, setUser]=useState<any> (null)
   const[loading,setLoading]=useState(true)
 }
 useEffect(()=>{
   const userData=localStorage.getItem('user)'
   if (userData) {
-    setSourceMapRange(JSON.parse(userData))
+    setUser(JSON.parse(userData))
   }
 setLoading(false)
 }, [])
-return {userAgent, loading}
+return {user, loading}
 }
 const AcademicSupervisorDashboard =()=>{
   const{user,loading}=useAuth()
-  const router=useRoutaper()
-  const [students, setStudents]=usestate([])
+  const router=useRouter()
+  const [students, setStudents]=useState<any[]>([])
   useEffect(()=>{
      if (user?.role ==='academic_supervisor'){
       setStudents([
