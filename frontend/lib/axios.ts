@@ -9,5 +9,8 @@ api.interceptors.request.use((config)=>{
     const user= localStorage.getItem('user')
     if (user) {
         const token = JSON.parse(user).token //adjust to token key
+        config.headers.Authorization='Bearer ${token}'
     }
+    return config
 })
+export defualt api
