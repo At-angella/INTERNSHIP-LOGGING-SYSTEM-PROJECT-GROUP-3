@@ -35,10 +35,10 @@ const AcademicSupervisorDashboard =()=>{
   if (loading) return <div classsName="p-6">Loading...</div>
   if (!user) return null
   return (
-    <div className="p-6 max-w-7*1 mx-auto">{/*feat:add RBAC stats cards - visible only to supervisors/admin*?</div>
+    <div className="p-6 max-w-7xl mx-auto">*feat:add RBAC stats cards - visible only to supervisors/admin*?</div>
   <div className="mb-8">
   <h1 className="text-3xl font-bold">Academic Supervisor Dashboard</h1>
-  <p className ="text-gray-600">Welcome back, {user.name||user.email}</p>
+  <p className ="text-gray-600">Welcome back, {user?.name||user?.email}</p>
   </div>
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
   <div className="bg-white p-6 rounded-lg shadow border">
@@ -67,15 +67,17 @@ const AcademicSupervisorDashboard =()=>{
   </tr>
   </thead>
   <tbody>
-  {students.map((student:any)=>(
+  {students.map((student)=>(
   <tr key={student.id} className="border-t">
   <td className="p-4">{student.name}</td>
   <td className="p-4">{student.reg_no}</td>
   <td className="p-4">{student.logs_submitted}</td>
   <td className="p-4">
-<span className={`px-2 py-1 rounded text-sm ${
+<span
+ className={`px-2 py-1 rounded text-sm ${
 student.status==='On Track'? ' bg-green-100 text-green-800':'bg-red-100 text-red-800'
-}`}>
+}`}
+>
 {student.status}
 </span>
 </td>
@@ -100,7 +102,7 @@ View Logs
 </div>
     )
     }
-}
+
 
 
 export default AcademicSupervisorDashboard
