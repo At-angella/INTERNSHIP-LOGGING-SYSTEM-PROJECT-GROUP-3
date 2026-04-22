@@ -1,6 +1,7 @@
 'use Client'
 import React ,{useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
+import api from '@/lib/axios'
 const useAuth=> {
   const[user, setUser]=useState<any> (null)
   const[loading,setLoading]=useState(true)
@@ -16,7 +17,7 @@ return {userAgent, loading}
 }
 const AcademicSupervisorDashboard =()=>{
   const{user,loading}=useAuth()
-  const router=useRouter()
+  const router=useRoutaper()
   const [students, setStudents]=usestate([])
   useEffect(()=>{
      if (user?.role ==='academic_supervisor'){
