@@ -19,6 +19,11 @@ const AcademicSupervisorDashboard =()=>{
   const{user,loading}=useAuth()
   const router=useRouter()
   const [students, setStudents]=useState<any[]>([])
+  useEffect(() => {
+    if (!loading && (!user || !['academic_supervisor','admin'].includes(user.role))){
+      router.push('/login')
+    }
+    },[user,loading,router])
   useEffect(()=>{
      if (user?.role ==='academic_supervisor'){
       setStudents([
