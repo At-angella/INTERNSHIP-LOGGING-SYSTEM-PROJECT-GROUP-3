@@ -1,0 +1,292 @@
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from core.models import (
+    CustomUser, WeeklyLog, SupervisorReview,
+    Evaluation, InternshipPlacement, AuditLog
+)
+
+# HELPERS FOR SIGNALS
+
+def _get_actor(instance, field='student'):
+    try:
+        return getattr(instance, field, None)
+    except Exception:
+        return None
+
+
+def _get_old_instance(sender, instance):
+    if instance.pk:
+        try:
+            return sender.objects.get(pk=instance.pk)
+        except sender.DoesNotExist:
+            return None
+    return None
+
+# CUSTOM USER SIGNALS
+
+@receiver(post_save, sender=CustomUser)
+def log_user_created(sender, instance, created, **kwargs):
+    #Log when a new user is created.
+    if created:
+        AuditLog.objects.create(
+            actor=instance,
+            action='USER_CREATED',
+            content_type='CustomUser',
+            object_id=instance.id,
+            new_value={
+                'email': instance.email,
+                'role': instance.role,
+            }
+        )
+
+@receiver(pre_save, sender=CustomUser)
+def log_user_role_change(sender, instance, **kwargs):
+    #Log when a user's role is changed.
+    old = _get_old_instance(sender, instance)
+    if old and old.role != instance.role:
+        AuditLog.objects.create(
+            actor=None,
+            action='USER_ROLE_CHANGED',
+            content_type='CustomUser',
+            object_id=instance.id,
+            old_value={'role': old.role},
+            new_value={'role': instance.role}
+        )
+
+# WEEKLY LOG SIGNALS
+# Maps log status to the correct audit action
+LOG_STATUS_ACTION_MAP = {
+    'SUBMITTED': 'LOG_SUBMITTED',
+    'REVIEWED':  'LOG_REVIEWED',
+    'APPROVED':  'LOG_APPROVED',
+    'REJECTED':  'LOG_REJECTED',
+}
+
+@receiver(pre_save, sender=WeeklyLog)
+def validate_log_state_transition(sender, instance, **kwargs):
+    old = _get_old_instance(sender, instance)
+    if not old:
+        return
+
+    old_status = old.status
+    new_status = instance.status
+
+    if old_status == new_status:
+        return
+
+    valid_transitions = {
+        'DRAFT':     ['SUBMITTED'],
+        'SUBMITTED': ['REVIEWED', 'REVISE'],
+        'REVIEWED':  ['APPROVED', 'REJECTED'],
+        'REVISE':    ['SUBMITTED'],
+        'APPROVED':  [],
+        'REJECTED':  ['REVISE'],
+    }
+
+    if new_status not in valid_transitions.get(old_status, []):
+        raise ValidationError(
+            f"Invalid state transition: '{old_status}' → '{new_status}'. "
+            f"Allowed transitions from '{old_status}': "
+            f"{valid_transitions.get(old_status, []) or 'none (terminal state)'}."
+        )
+
+
+@receiver(post_save, sender=WeeklyLog)
+def log_weekly_log_changes(sender, instance, created, **kwargs):
+    if created:
+        AuditLog.objects.create(
+            actor=instance.placement.student,
+            action='LOG_CREATED',
+            content_type='WeeklyLog',
+            object_id=instance.id,
+            old_value=None,
+            new_value={
+                'week_number': instance.week_number,
+                'status': instance.status,
+                'placement_id': instance.placement.id,
+            }
+        )
+        return
+
+    # Only log if status actually changed
+    action = LOG_STATUS_ACTION_MAP.get(instance.status)
+    if not action:
+        return
+
+    # Determine the actor based on who acts at each stage
+    actor_map = {
+        'LOG_SUBMITTED': instance.placement.student,
+        'LOG_REVIEWED':  instance.placement.workplace_supervisor,
+        'LOG_APPROVED':  instance.placement.academic_supervisor,
+        'LOG_REJECTED':  instance.placement.academic_supervisor,
+    }
+
+    AuditLog.objects.create(
+        actor=actor_map.get(action),
+        action=action,
+        content_type='WeeklyLog',
+        object_id=instance.id,
+        old_value={'status': instance.tracker.previous('status') if hasattr(instance, 'tracker') else None},
+        new_value={
+            'status': instance.status,
+            'week_number': instance.week_number,
+        }
+    )
+
+    # Auto-update timestamps based on status
+    updates = {}
+    if instance.status == 'SUBMITTED' and not instance.submitted_at:
+        updates['submitted_at'] = timezone.now()
+    elif instance.status == 'REVIEWED' and not instance.reviewed_at:
+        updates['reviewed_at'] = timezone.now()
+    elif instance.status == 'APPROVED' and not instance.approved_at:
+        updates['approved_at'] = timezone.now()
+
+    if updates:
+        # update() to avoid triggering this signal again recursively
+        WeeklyLog.objects.filter(pk=instance.pk).update(**updates)
+
+# PLACEMENT SIGNALS
+
+PLACEMENT_STATUS_ACTION_MAP = {
+    'APPROVED':  'PLACEMENT_APPROVED',
+    'REJECTED':  'PLACEMENT_REJECTED',
+    'ACTIVE':    'PLACEMENT_APPROVED',
+    'COMPLETED': 'PLACEMENT_APPROVED',
+    'CANCELLED': 'PLACEMENT_REJECTED',
+}
+
+@receiver(pre_save, sender=InternshipPlacement)
+def validate_placement_state_transition(sender, instance, **kwargs):
+    old = _get_old_instance(sender, instance)
+    if not old:
+        return
+
+    old_status = old.status
+    new_status = instance.status
+
+    if old_status == new_status:
+        return
+
+    valid_transitions = {
+        'PENDING':   ['APPROVED', 'REJECTED'],
+        'APPROVED':  ['ACTIVE', 'CANCELLED'],
+        'ACTIVE':    ['COMPLETED', 'CANCELLED'],
+        'COMPLETED': [],
+        'REJECTED':  [],
+        'CANCELLED': [],
+    }
+
+    if new_status not in valid_transitions.get(old_status, []):
+        raise ValidationError(
+            f"Invalid placement transition: '{old_status}' → '{new_status}'. "
+            f"Allowed: {valid_transitions.get(old_status, []) or 'none (terminal state)'}."
+        )
+
+
+@receiver(post_save, sender=InternshipPlacement)
+def log_placement_changes(sender, instance, created, **kwargs):
+    """Log placement creation and status changes."""
+    if created:
+        AuditLog.objects.create(
+            actor=instance.student,
+            action='PLACEMENT_APPROVED',
+            content_type='InternshipPlacement',
+            object_id=instance.id,
+            old_value=None,
+            new_value={
+                'student_id': instance.student.id,
+                'workplace': instance.workplace.name,
+                'status': instance.status,
+                'start_date': str(instance.start_date),
+                'end_date': str(instance.end_date),
+            }
+        )
+        return
+
+    action = PLACEMENT_STATUS_ACTION_MAP.get(instance.status)
+    if not action:
+        return
+
+    AuditLog.objects.create(
+        actor=instance.approved_by,
+        action=action,
+        content_type='InternshipPlacement',
+        object_id=instance.id,
+        old_value={'status': instance.tracker.previous('status') if hasattr(instance, 'tracker') else None},
+        new_value={
+            'status': instance.status,
+            'approved_by': instance.approved_by.email if instance.approved_by else None,
+        }
+    )
+
+    # Auto-set approved_at timestamp
+    if instance.status == 'APPROVED' and not instance.approved_at:
+        InternshipPlacement.objects.filter(pk=instance.pk).update(
+            approved_at=timezone.now()
+        )
+
+# SUPERVISOR REVIEW SIGNALS
+
+@receiver(post_save, sender=SupervisorReview)
+def log_supervisor_review(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    AuditLog.objects.create(
+        actor=instance.reviewer,
+        action='REVIEW_COMPLETED',
+        content_type='SupervisorReview',
+        object_id=instance.id,
+        old_value=None,
+        new_value={
+            'log_id': instance.log.id,
+            'week_number': instance.log.week_number,
+            'performance_rating': instance.performance_rating,
+            'attendance_rating': instance.attendance_rating,
+            'attitude_rating': instance.attitude_rating,
+            'approval_status': instance.approval_status,
+        }
+    )
+
+# EVALUATION SIGNALS
+
+@receiver(post_save, sender=Evaluation)
+def log_evaluation_changes(sender, instance, created, **kwargs):
+    if created:
+        AuditLog.objects.create(
+            actor=instance.evaluator,
+            action='EVALUATION_CREATED',
+            content_type='Evaluation',
+            object_id=instance.id,
+            old_value=None,
+            new_value={
+                'placement_id': instance.placement.id,
+                'evaluator': instance.evaluator.email,
+            }
+        )
+        return
+
+    # Only log when actually submitted — not on every score update
+    if instance.is_submitted:
+        AuditLog.objects.create(
+            actor=instance.evaluator,
+            action='EVALUATION_SUBMITTED',
+            content_type='Evaluation',
+            object_id=instance.id,
+            old_value={'is_submitted': False},
+            new_value={
+                'is_submitted': True,
+                'total_score': instance.total_weighted_score,
+                'final_grade': instance.final_grade,
+                'submitted_at': str(timezone.now()),
+            }
+        )
+
+        # Auto-set submitted_at timestamp
+        if not instance.submitted_at:
+            Evaluation.objects.filter(pk=instance.pk).update(
+                submitted_at=timezone.now()
+            )
