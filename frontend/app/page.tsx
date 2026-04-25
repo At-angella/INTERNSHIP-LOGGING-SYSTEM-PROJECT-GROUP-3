@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { LogIn, UserPlus } from 'lucide-react';
 
-interface FeatureCardProps {
+--interface FeatureCardProps {
   title: string;
   description: string;
   icon: string;
@@ -21,7 +21,7 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
             Bob the Builder, can wwe fix it.
           </p>
-        </div>
+        </div>git pull
 
         <div className="flex flex-col sm:flex-row gap-6 w-full max-w-md mx-auto">
           <Link href="/login" className="btn-primary flex items-center justify-center gap-2 group w-full text-lg">
