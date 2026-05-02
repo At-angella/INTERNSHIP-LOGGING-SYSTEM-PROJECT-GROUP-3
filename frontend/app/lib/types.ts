@@ -67,3 +67,21 @@ export interface AcademicDepartment {
   head: User | null;
   placement_count: number;
 }
+export interface WeeklyLog {
+  id: number;
+  placement: InternshipPlacement;
+  week_number: number;
+  week_start_date: string;
+  week_end_date: string;
+  status: 'DRAFT' | 'SUBMITTED' | 'REVIEWED' | 'APPROVED' | 'REJECTED' | 'REVISE';
+  status_display: string;
+  activities_performed: string;
+  skills_acquired: string;
+  challenges_faced: string;
+  lessons_learned: string;
+  hours_worked: number;
+  supervisor_review: SupervisorReview | null;
+  submitted_at?: string;
+  reviewed_at?: string;
+  approved_at?: string;
+}
