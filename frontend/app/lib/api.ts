@@ -156,3 +156,46 @@ class ApiClient {
       body: JSON.stringify({ status }),
     });
   }
+
+  // Weekly Logs
+  async getWeeklyLogs(params?: any) {
+    if (USE_MOCK_DATA) return mockApiData.getWeeklyLogs();
+    const query = params ? '?' + new URLSearchParams(params) : '';
+    return this.request(`/logs/${query}`);
+  }
+
+  async getWeeklyLog(id: number) {
+    if (USE_MOCK_DATA) return mockApiData.getWeeklyLog(id);
+    return this.request(`/logs/${id}/`);
+  }
+
+  async createWeeklyLog(data: any) {
+    if (USE_MOCK_DATA) return mockApiData.createWeeklyLog(data);
+    return this.request('/logs/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  updateWeeklyLog(id: number, data: any) {
+    return this.request(`/logs/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  submitLog(id: number) {
+    return this.request(`/logs/${id}/submit/`, { method: 'POST' });
+  }
+
+  reviewLog(id: number) {
+    return this.request(`/logs/${id}/review/`, { method: 'POST' });
+  }
+
+  approveLog(id: number) {
+    return this.request(`/logs/${id}/approve/`, { method: 'POST' });
+  }
+
+  rejectLog(id: number) {
+    return this.request(`/logs/${id}/reject/`, { method: 'POST' });
+  }
