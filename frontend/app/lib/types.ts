@@ -48,3 +48,14 @@ export interface InternshipPlacement {
     pending_logs: number;
   };
 }
+export interface Workplace {
+  id: number;
+  name: string;
+  industry: string;
+  address: string;
+  contact_person: string;
+  contact_email: string;
+  contact_phone: string;
+  is_active: boolean;
+  active_placements_count: number;
+}
