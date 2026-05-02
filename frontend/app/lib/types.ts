@@ -29,3 +29,22 @@ export interface WorkplaceSupervisor extends User {
   workplace_department: string;
   years_of_experience: number;
 }
+export interface InternshipPlacement {
+  id: number;
+  student: Student;
+  workplace: Workplace;
+  academic_supervisor: AcademicSupervisor;
+  workplace_supervisor: WorkplaceSupervisor;
+  department: AcademicDepartment;
+  start_date: string;
+  end_date: string;
+  status: 'PENDING' | 'APPROVED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'REJECTED';
+  status_display: string;
+  position_title: string;
+  description: string;
+  log_progress: {
+    total_logs: number;
+    approved_logs: number;
+    pending_logs: number;
+  };
+}
