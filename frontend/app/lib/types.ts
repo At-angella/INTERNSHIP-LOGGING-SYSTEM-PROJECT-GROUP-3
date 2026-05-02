@@ -85,3 +85,14 @@ export interface WeeklyLog {
   reviewed_at?: string;
   approved_at?: string;
 }
+export interface SupervisorReview {
+  id: number;
+  log: number;
+  reviewer: User;
+  performance_rating: number;
+  attendance_rating: number;
+  attitude_rating: number;
+  comments: string;
+  recommendations: string;
+  approval_status: string;
+}
