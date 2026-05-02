@@ -199,3 +199,11 @@ class ApiClient {
   rejectLog(id: number) {
     return this.request(`/logs/${id}/reject/`, { method: 'POST' });
   }
+
+  // Supervisor Review
+  createReview(data: any) {
+    return this.request('/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
