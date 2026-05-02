@@ -1,4 +1,8 @@
+import { mockApiData, mockUsers } from './mockData';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// Use mock data only if explicitly requested via env var
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
 
 class ApiClient {
   private token: string | null = null;
@@ -73,4 +77,28 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  // Auth
+  async login(email: string, password: string) {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const mockUser = mockUsers.find(u => u.email === email);
+      if (!mockUser) throw new Error('Invalid email or password');
+      
+      const token = 'mock_token_' + Date.now();
+      this.setTokens(token, 'mock_refresh');
+      
+      // Store user for mock getUserProfile
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+      }
+      
+      return { tokens: { access: token, refresh: 'mock_refresh' }, user: mockUser };
+    }
+    
+    return this.request('/auth/login/', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
   }
