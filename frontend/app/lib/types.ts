@@ -11,12 +11,14 @@ export interface User {
   is_active: boolean;
   date_joined?: string;
 }
+
 export interface Student extends User {
   student_id: string;
   registration_number: string;
   college: string;
   program: string;
 }
+
 export interface AcademicSupervisor extends User {
   staff_id: string;
   faculty: string;
@@ -24,11 +26,13 @@ export interface AcademicSupervisor extends User {
   specialization: string;
   max_students: number;
 }
+
 export interface WorkplaceSupervisor extends User {
   job_title: string;
   workplace_department: string;
   years_of_experience: number;
 }
+
 export interface InternshipPlacement {
   id: number;
   student: Student;
@@ -48,6 +52,7 @@ export interface InternshipPlacement {
     pending_logs: number;
   };
 }
+
 export interface Workplace {
   id: number;
   name: string;
@@ -59,6 +64,7 @@ export interface Workplace {
   is_active: boolean;
   active_placements_count: number;
 }
+
 export interface AcademicDepartment {
   id: number;
   name: string;
@@ -67,6 +73,7 @@ export interface AcademicDepartment {
   head: User | null;
   placement_count: number;
 }
+
 export interface WeeklyLog {
   id: number;
   placement: InternshipPlacement;
@@ -85,6 +92,7 @@ export interface WeeklyLog {
   reviewed_at?: string;
   approved_at?: string;
 }
+
 export interface SupervisorReview {
   id: number;
   log: number;
@@ -96,6 +104,7 @@ export interface SupervisorReview {
   recommendations: string;
   approval_status: string;
 }
+
 export interface Evaluation {
   id: number;
   placement: InternshipPlacement;
