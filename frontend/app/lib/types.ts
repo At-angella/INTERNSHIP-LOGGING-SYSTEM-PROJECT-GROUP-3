@@ -24,3 +24,8 @@ export interface AcademicSupervisor extends User {
   specialization: string;
   max_students: number;
 }
+export interface WorkplaceSupervisor extends User {
+  job_title: string;
+  workplace_department: string;
+  years_of_experience: number;
+}
