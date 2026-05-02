@@ -59,3 +59,11 @@ export interface Workplace {
   is_active: boolean;
   active_placements_count: number;
 }
+export interface AcademicDepartment {
+  id: number;
+  name: string;
+  faculty: string;
+  description: string;
+  head: User | null;
+  placement_count: number;
+}
