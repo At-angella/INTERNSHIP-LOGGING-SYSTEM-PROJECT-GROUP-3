@@ -96,3 +96,17 @@ export interface SupervisorReview {
   recommendations: string;
   approval_status: string;
 }
+export interface Evaluation {
+  id: number;
+  placement: InternshipPlacement;
+  evaluator: AcademicSupervisor;
+  technical_score: number;
+  soft_skills_score: number;
+  attendance_score: number;
+  conduct_score: number;
+  total_weighted_score: number;
+  final_grade: string;
+  summary_comments: string;
+  recommendation: string;
+  is_submitted: boolean;
+}
