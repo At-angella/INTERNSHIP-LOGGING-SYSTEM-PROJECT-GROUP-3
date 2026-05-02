@@ -225,3 +225,36 @@ class ApiClient {
   submitEvaluation(id: number) {
     return this.request(`/evaluations/${id}/submit/`, { method: 'POST' });
   }
+
+  // Admin
+  async getUsers(params?: any) {
+    if (USE_MOCK_DATA) return mockApiData.getUsers();
+    const query = params ? '?' + new URLSearchParams(params) : '';
+    return this.request(`/users/${query}`);
+  }
+
+  async registerSupervisor(data: any) {
+    if (USE_MOCK_DATA) return mockApiData.registerSupervisor(data);
+    return this.request('/auth/register/supervisor/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getDepartments() {
+    if (USE_MOCK_DATA) return mockApiData.getDepartments();
+    return this.request('/departments/');
+  }
+
+  async getWorkplaces() {
+    if (USE_MOCK_DATA) return mockApiData.getWorkplaces();
+    return this.request('/workplaces/');
+  }
+
+  async getAuditLogs() {
+    if (USE_MOCK_DATA) return mockApiData.getAuditLogs();
+    return this.request('/audit-logs/');
+  }
+}
+
+export const api = new ApiClient();
