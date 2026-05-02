@@ -102,3 +102,57 @@ class ApiClient {
       body: JSON.stringify({ email, password }),
     });
   }
+
+  async getUserProfile() {
+    if (USE_MOCK_DATA) {
+      const userStr = localStorage.getItem('mockUser');
+      if (userStr) return JSON.parse(userStr);
+      throw new Error('No user found');
+    }
+    return this.request('/users/me/');
+  }
+
+  registerStudent(data: any) {
+    return this.request('/auth/register/student/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  changePassword(oldPassword: string, newPassword: string) {
+    return this.request('/auth/change-password/', {
+      method: 'POST',
+      body: JSON.stringify({
+        old_password: oldPassword,
+        new_password: newPassword,
+        confirm_new_password: newPassword,
+      }),
+    });
+  }
+
+  // Placements
+  async getPlacements(params?: any) {
+    if (USE_MOCK_DATA) return mockApiData.getPlacements();
+    const query = params ? '?' + new URLSearchParams(params) : '';
+    return this.request(`/placements/${query}`);
+  }
+
+  async getPlacement(id: number) {
+    if (USE_MOCK_DATA) return mockApiData.getPlacement(id);
+    return this.request(`/placements/${id}/`);
+  }
+
+  async createPlacement(data: any) {
+    if (USE_MOCK_DATA) return mockApiData.createPlacement(data);
+    return this.request('/placements/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  updatePlacementStatus(id: number, status: string) {
+    return this.request(`/placements/${id}/update_status/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
