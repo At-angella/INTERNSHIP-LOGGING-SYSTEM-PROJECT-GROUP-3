@@ -11,10 +11,10 @@ export interface MockUser {
 export const mockUsers: MockUser[] = [
   {
     id: 1,
-    email: 'angella@student.mak.ac.ug',
+    email: 'angella@gmail.com',
     password: 'angella111',
     first_name: 'Angella',
-    last_name: 'Atukwatse',
+    last_name: 'Student',
     role: 'STUDENT'
   },
   {
@@ -22,23 +22,52 @@ export const mockUsers: MockUser[] = [
     email: 'supervisor@mak.ac.ug',
     password: 'supervisor123',
     first_name: 'Mathias',
-    last_name: 'Mponye',
+    last_name: 'Supervisor',
     role: 'ACADEMIC_SUPERVISOR'
   },
   {
     id: 3,
-    email: 'workplace@company.com',
+    email: 'workplace@companyname.com',
     password: 'workplace123',
     first_name: 'Sliver',
-    last_name: 'Mukundane',
+    last_name: 'Mentor',
     role: 'WORKPLACE_SUPERVISOR'
   },
   {
     id: 4,
-    email: 'admin@system.com',
+    email: 'admin@group3.com',
     password: 'admin123',
-    first_name: 'System',
-    last_name: 'Admin',
+    first_name: 'Admin',
+    last_name: 'User',
     role: 'ADMIN'
   }
 ];
+
+export const mockLogin = async (email: string, password: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const user = mockUsers.find(u => u.email === email && u.password === password);
+  
+  if (!user) {
+    throw new Error('Invalid email or password');
+  }
+    const { password: _, ...userWithoutPassword } = user;
+    // Store in localStorage
+  localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+  localStorage.setItem('isAuthenticated', 'true');
+  
+  return userWithoutPassword;
+};
+
+export const mockLogout = async () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('isAuthenticated');
+};
+
+export const getMockUser = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    return JSON.parse(userStr);
+  }
+  return null;
+};
