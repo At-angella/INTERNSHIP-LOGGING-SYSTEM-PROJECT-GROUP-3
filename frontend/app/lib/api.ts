@@ -207,3 +207,21 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Evaluations
+  async getEvaluations(params?: any) {
+    if (USE_MOCK_DATA) return mockApiData.getEvaluations();
+    const query = params ? '?' + new URLSearchParams(params) : '';
+    return this.request(`/evaluations/${query}`);
+  }
+
+  createEvaluation(data: any) {
+    return this.request('/evaluations/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  submitEvaluation(id: number) {
+    return this.request(`/evaluations/${id}/submit/`, { method: 'POST' });
+  }
