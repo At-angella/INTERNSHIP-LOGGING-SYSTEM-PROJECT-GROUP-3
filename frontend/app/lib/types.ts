@@ -17,3 +17,10 @@ export interface Student extends User {
   college: string;
   program: string;
 }
+export interface AcademicSupervisor extends User {
+  staff_id: string;
+  faculty: string;
+  department: string;
+  specialization: string;
+  max_students: number;
+}
