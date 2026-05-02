@@ -11,3 +11,9 @@ export interface User {
   is_active: boolean;
   date_joined?: string;
 }
+export interface Student extends User {
+  student_id: string;
+  registration_number: string;
+  college: string;
+  program: string;
+}
