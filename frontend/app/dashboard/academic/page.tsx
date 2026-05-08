@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client'
 import React ,{useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
@@ -106,3 +107,5 @@ View Logs
 
 
 export default AcademicSupervisorDashboard
+=======
+>>>>>>> 9698b1e1a49bc0f4d66b2f2c1c5eafe4e781ee1a
