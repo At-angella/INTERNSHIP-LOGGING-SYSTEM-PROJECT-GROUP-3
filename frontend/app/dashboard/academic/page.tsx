@@ -101,7 +101,7 @@ View Logs
 </div>
 </div>
     )
-    }
+}
 
 
 

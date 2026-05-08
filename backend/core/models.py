@@ -10,7 +10,8 @@ import string
 
 # USER MANAGEMENT MODELS
 
-class CustomUserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):\1
+
     ROLE_EMAIL_DOMAINS = {
         'ADMIN': '@mak.ac.ug',
         'STUDENT': '@student.mak.ac.ug',
