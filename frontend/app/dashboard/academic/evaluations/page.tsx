@@ -53,4 +53,19 @@ export default function EvaluationsPage() {
         console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
-      }
+      }};
+
+    if (user) fetchData();
+  }, [user]);
+
+  const filteredEvaluations = evaluations.filter(evaluation => {
+    const studentMatch = filterStudent === 'ALL' || evaluation.placement?.id === parseInt(filterStudent);
+    return studentMatch;
+  });
+
+  const stats = {
+    submitted: evaluations.filter(e => e.is_submitted).length,
+    pending: Math.max(0, placements.length - evaluations.filter(e => e.is_submitted).length),
+    avgTechnical: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.technical_score || 0), 0) / evaluations.length).toFixed(1) : 0,
+    avgOverall: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.total_weighted_score || 0), 0) / evaluations.length).toFixed(1) : 0,
+  };
