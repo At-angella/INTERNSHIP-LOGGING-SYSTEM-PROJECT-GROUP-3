@@ -224,3 +224,68 @@ export default function EvaluationsPage() {
                   onChange={val => setEditFormData({ ...editFormData, conduct_score: val })}
                 />
               </div>
+
+               <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Qualitative Summary</label>
+                  <textarea
+                    value={editFormData.summary_comments}
+                    onChange={e => setEditFormData({ ...editFormData, summary_comments: e.target.value })}
+                    placeholder="Provide a detailed summary of the intern's growth and impact..."
+                    className="w-full p-4 text-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none min-h-[100px] resize-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Final Recommendation</label>
+                  <textarea
+                    value={editFormData.recommendation}
+                    onChange={e => setEditFormData({ ...editFormData, recommendation: e.target.value })}
+                    placeholder="Future development areas or employment recommendation..."
+                    className="w-full p-4 text-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none min-h-[80px] resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex gap-4">
+              <Button variant="ghost" className="flex-1" onClick={() => setShowEvalModal(false)}>Discard</Button>
+              <Button className="flex-1" onClick={handleSubmitEvaluation}>Save Assessment</Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+}
+
+function StatCard({ title, value, icon, color, highlight = false }: any) {
+  return (
+    <Card className={`p-6 relative overflow-hidden group ${highlight ? 'ring-2 ring-amber-500/50' : ''}`} hoverable>
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</h3>
+      </div>
+      <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
+        {icon}
+      </div>
+    </Card>
+  );
+}
+
+function EvaluationCard({ evaluation, onEdit }: { evaluation: Evaluation, onEdit: () => void }) {
+  const score = evaluation.total_weighted_score || 0;
+  const grade = evaluation.final_grade;
+
+  return (
+    <Card className="overflow-hidden border-t-4 border-t-slate-200 dark:border-t-slate-800 hover:border-t-primary transition-all duration-300" variant="panel">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-linear-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800/50">
+        <div>
+          <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+            {evaluation.placement?.student?.first_name} {evaluation.placement?.student?.last_name}
+          </h3>
+          <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">{evaluation.placement?.position_title}</p>
+        </div>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg transform rotate-3 ${score >= 80 ? 'bg-emerald-500 text-white' : score >= 60 ? 'bg-indigo-500 text-white' : 'bg-amber-500 text-white'}`}>
+          {grade || '-'}
+        </div>
+      </div>
