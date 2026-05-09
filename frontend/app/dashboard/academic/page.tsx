@@ -19,3 +19,9 @@ import {
   Plus,
   BarChart3
 } from 'lucide-react';
+export default function AcademicDashboard() {
+  const { user } = useAuth();
+  const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
+  const [weeklyLogs, setWeeklyLogs] = useState<WeeklyLog[]>([]);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [loading, setLoading] = useState(true);
