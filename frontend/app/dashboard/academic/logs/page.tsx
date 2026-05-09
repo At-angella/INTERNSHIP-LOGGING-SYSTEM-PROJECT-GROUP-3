@@ -50,3 +50,20 @@ export default function LogsPage() {
     
     if (user) fetchData();
   }, [user]);
+
+   const filteredLogs = logs.filter(log => {
+    let statusMatch = true;
+    if (filterStatus === 'PENDING') statusMatch = log.status !== 'APPROVED' && log.status !== 'REJECTED';
+    else if (filterStatus === 'APPROVED') statusMatch = log.status === 'APPROVED';
+    else if (filterStatus === 'REJECTED') statusMatch = log.status === 'REJECTED';
+    
+    const studentMatch = filterStudent === 'ALL' || log.placement?.id === parseInt(filterStudent);
+    return statusMatch && studentMatch;
+  });
+
+  const stats = {
+    pending: logs.filter(l => l.status !== 'APPROVED' && l.status !== 'REJECTED').length,
+    approved: logs.filter(l => l.status === 'APPROVED').length,
+    rejected: logs.filter(l => l.status === 'REJECTED').length,
+    total: logs.length,
+  };
