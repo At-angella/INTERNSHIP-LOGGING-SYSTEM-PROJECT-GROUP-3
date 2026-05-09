@@ -210,3 +210,83 @@ export default function LogsPage() {
           </Card>
         </div>
       )}
+       </DashboardLayout>
+  );
+}
+
+function StatCard({ title, value, icon, color, highlight = false }: { title: string, value: number, icon: React.ReactNode, color: string, highlight?: boolean }) {
+  return (
+    <Card className={`p-6 relative overflow-hidden group ${highlight ? 'ring-2 ring-amber-500/50' : ''}`} hoverable>
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</h3>
+      </div>
+      <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
+        {icon}
+      </div>
+    </Card>
+  );
+}
+
+function LogReviewCard({ log, onReview }: { log: WeeklyLog, onReview: () => void }) {
+  const isPending = log.status !== 'APPROVED' && log.status !== 'REJECTED';
+  
+  return (
+    <Card className="overflow-hidden border-l-4 border-l-slate-200 dark:border-l-slate-800 hover:border-l-primary transition-all duration-300" variant="panel">
+      <div className="p-6 space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">Week {log.week_number} Log</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+              {log.placement?.student?.first_name} {log.placement?.student?.last_name}
+            </p>
+          </div>
+          <Statusbar status={log.status} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="text-[10px]">
+              <p className="font-bold text-slate-400 uppercase leading-none mb-1">Period</p>
+              <p className="font-black text-slate-700 dark:text-slate-300">Week Ending {new Date(log.week_end_date).toLocaleDateString()}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-right">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center ml-auto order-last">
+              <Clock className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="text-[10px]">
+              <p className="font-bold text-slate-400 uppercase leading-none mb-1">Workload</p>
+              <p className="font-black text-slate-700 dark:text-slate-300">{log.hours_worked} Hours Logged</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-2">Activities Performed</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">{log.activities_performed}</p>
+          </div>
+          {log.reviewer_comments && (
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <MessageSquare className="w-3 h-3" /> Reviewer Feedback
+              </p>
+              <p className="text-xs text-slate-500 italic">{log.reviewer_comments}</p>
+            </div>
+          )}
+        </div>
+
+        {isPending && (
+          <Button className="w-full mt-4" onClick={onReview}>
+            Review Submission
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
+      </div>
+    </Card>
+  );
+}
