@@ -38,3 +38,19 @@ export default function EvaluationsPage() {
     summary_comments: '',
     recommendation: ''
   });
+
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [placementsData, evalsData] = await Promise.all([
+          api.getPlacements(),
+          api.getEvaluations(),
+        ]);
+
+        setPlacements(placementsData.results || placementsData || []);
+        setEvaluations(evalsData.results || evalsData || []);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
