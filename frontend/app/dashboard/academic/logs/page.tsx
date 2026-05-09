@@ -114,3 +114,27 @@ export default function LogsPage() {
           <StatCard title="Rejected" value={stats.rejected} icon={<AlertCircle />} color="text-rose-500" />
           <StatCard title="Total Logs" value={stats.total} icon={<FileText />} color="text-slate-500" />
         </div>
+
+ {/* Filters */}
+        <Card className="p-4" variant="glass">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div className="relative">
+              <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <select
+                value={filterStudent}
+                onChange={(e) => setFilterStudent(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:ring-2 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+              >
+                <option value="ALL">All Supervised Students</option>
+                {uniqueStudents.map(student => (
+                  <option key={student.id} value={student.id}>{student.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg inline-block">
+                Showing {filteredLogs.length} Submissions
+              </p>
+            </div>
+          </div>
+        </Card>
