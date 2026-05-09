@@ -160,3 +160,53 @@ export default function LogsPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {selectedLog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-lg p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" variant="panel">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">Review Submission</h2>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">Week {selectedLog.week_number} • {selectedLog.placement?.student?.first_name} {selectedLog.placement?.student?.last_name}</p>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setReviewAction('APPROVE')}
+                  className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${reviewAction === 'APPROVE' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' : 'border-slate-100 dark:border-slate-800 text-slate-400'}`}
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-bold">Approve</span>
+                </button>
+                <button
+                  onClick={() => setReviewAction('REJECT')}
+                  className={`flex items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${reviewAction === 'REJECT' ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20 text-rose-600' : 'border-slate-100 dark:border-slate-800 text-slate-400'}`}
+                >
+                  <XCircle className="w-5 h-5" />
+                  <span className="font-bold">Reject</span>
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Feedback Comment</label>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Provide guidance or feedback to the student..."
+                  className="w-full p-4 text-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none transition-all min-h-[120px] resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+              <Button variant="ghost" className="flex-1" onClick={() => { setSelectedLog(null); setReviewAction(null); setReviewComment(''); }}>
+                Cancel
+              </Button>
+              <Button className="flex-1" disabled={!reviewAction} onClick={handleSubmitReview}>
+                Submit Review
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
