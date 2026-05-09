@@ -70,3 +70,19 @@ export default function EvaluationsPage() {
     avgTechnical: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.technical_score || 0), 0) / evaluations.length).toFixed(1) : 0,
     avgOverall: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.total_weighted_score || 0), 0) / evaluations.length).toFixed(1) : 0,
   };
+   const uniqueStudents = Array.from(
+    new Map(placements.map(p => [p.id, { id: p.id, name: `${p.student?.first_name} ${p.student?.last_name}` }])).values()
+  );
+
+  const handleEditEvaluation = (evaluation: Evaluation) => {
+    setSelectedEval(evaluation);
+    setEditFormData({
+      technical_score: evaluation.technical_score || 0,
+      soft_skills_score: evaluation.soft_skills_score || 0,
+      attendance_score: evaluation.attendance_score || 0,
+      conduct_score: evaluation.conduct_score || 0,
+      summary_comments: evaluation.summary_comments || '',
+      recommendation: evaluation.recommendation || ''
+    });
+    setShowEvalModal(true);
+  };
