@@ -25,3 +25,20 @@ export default function AcademicDashboard() {
   const [weeklyLogs, setWeeklyLogs] = useState<WeeklyLog[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
+ useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [placementsData, logsData, evalsData] = await Promise.all([
+          api.getPlacements(),
+          api.getWeeklyLogs(),
+          api.getEvaluations()
+        ]);
+        setPlacements(placementsData.results?.slice(0, 10) || placementsData.slice(0, 10) || []);
+        setWeeklyLogs(logsData.results?.slice(0, 8) || logsData.slice(0, 8) || []);
+        setEvaluations(evalsData.results || evalsData || []);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
