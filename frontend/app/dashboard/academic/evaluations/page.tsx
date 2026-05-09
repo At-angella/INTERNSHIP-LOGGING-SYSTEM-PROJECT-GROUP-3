@@ -208,3 +208,19 @@ export default function EvaluationsPage() {
                   value={editFormData.technical_score}
                   onChange={val => setEditFormData({ ...editFormData, technical_score: val })}
                 />
+                 <ScoreInput
+                  label="Soft Skills & Teamwork"
+                  value={editFormData.soft_skills_score}
+                  onChange={val => setEditFormData({ ...editFormData, soft_skills_score: val })}
+                />
+                <ScoreInput
+                  label="Attendance & Punctuality"
+                  value={editFormData.attendance_score}
+                  onChange={val => setEditFormData({ ...editFormData, attendance_score: val })}
+                />
+                <ScoreInput
+                  label="Professional Conduct"
+                  value={editFormData.conduct_score}
+                  onChange={val => setEditFormData({ ...editFormData, conduct_score: val })}
+                />
+              </div>
