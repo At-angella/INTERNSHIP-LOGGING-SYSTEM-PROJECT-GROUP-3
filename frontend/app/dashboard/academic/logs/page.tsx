@@ -105,3 +105,12 @@ export default function LogsPage() {
           </div>
         }
       />
+
+       <div className="space-y-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Awaiting Review" value={stats.pending} icon={<Clock />} color="text-amber-500" highlight={stats.pending > 0} />
+          <StatCard title="Approved" value={stats.approved} icon={<CheckCircle2 />} color="text-emerald-500" />
+          <StatCard title="Rejected" value={stats.rejected} icon={<AlertCircle />} color="text-rose-500" />
+          <StatCard title="Total Logs" value={stats.total} icon={<FileText />} color="text-slate-500" />
+        </div>
