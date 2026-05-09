@@ -84,3 +84,24 @@ export default function LogsPage() {
       setReviewAction(null);
       setReviewComment('');
     }
+     };
+
+  return (
+    <DashboardLayout>
+      <PageHeader 
+        title="Weekly Logs Review"
+        subtitle="Approve or reject student logbook submissions for the current internship cycle."
+        actions={
+          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            {['PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === status ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-400'}`}
+              >
+                {status.charAt(0) + status.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
+        }
+      />
