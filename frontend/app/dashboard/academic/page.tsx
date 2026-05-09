@@ -19,12 +19,14 @@ import {
   Plus,
   BarChart3
 } from 'lucide-react';
+
 export default function AcademicDashboard() {
   const { user } = useAuth();
   const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
   const [weeklyLogs, setWeeklyLogs] = useState<WeeklyLog[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
+
  useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,8 +44,10 @@ export default function AcademicDashboard() {
         setLoading(false);
       }
     };
+
       if (user) fetchData();
   }, [user]);
+
 const pendingApprovals = weeklyLogs.filter(l => l.status === 'REVIEWED').length;
 
   return (
@@ -68,3 +72,32 @@ const pendingApprovals = weeklyLogs.filter(l => l.status === 'REVIEWED').length;
           </div>
         }
       />
+
+      <div className="space-y-8">
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="My Students" value={placements.length} icon={<GraduationCap />} color="text-primary" />
+          <StatCard title="Log Approvals" value={pendingApprovals} icon={<ClipboardCheck />} color="text-amber-500" highlight={pendingApprovals > 0} />
+          <StatCard title="Total Logs" value={weeklyLogs.length} icon={<FileText />} color="text-indigo-500" />
+          <StatCard title="Evaluations" value={evaluations.length} icon={<ClipboardCheck />} color="text-emerald-500" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main List */}
+          <Card className="lg:col-span-2 p-0 overflow-hidden" variant="panel">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                Supervised Students
+              </h3>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search student..." 
+                    className="pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
