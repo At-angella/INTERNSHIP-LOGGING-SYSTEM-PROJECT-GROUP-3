@@ -138,3 +138,25 @@ export default function LogsPage() {
             </div>
           </div>
         </Card>
+
+        {loading ? (
+          <div className="py-20 text-center">
+            <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Fetching logbooks...</p>
+          </div>
+        ) : filteredLogs.length === 0 ? (
+          <Card className="p-20 text-center" variant="panel">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-slate-300" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">All caught up!</h3>
+            <p className="text-slate-500 text-sm">No logs found for the selected filters.</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredLogs.map(log => (
+              <LogReviewCard key={log.id} log={log} onReview={() => setSelectedLog(log)} />
+            ))}
+          </div>
+        )}
+      </div>
