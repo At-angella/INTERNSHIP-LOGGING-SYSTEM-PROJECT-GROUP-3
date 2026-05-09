@@ -67,3 +67,20 @@ export default function LogsPage() {
     rejected: logs.filter(l => l.status === 'REJECTED').length,
     total: logs.length,
   };
+
+  const uniqueStudents = Array.from(
+    new Map(placements.map(p => [p.id, { id: p.id, name: `${p.student?.first_name} ${p.student?.last_name}` }])).values()
+  );
+
+  const handleSubmitReview = () => {
+    if (selectedLog && reviewAction) {
+      const updatedLogs = logs.map(log =>
+        log.id === selectedLog.id
+          ? { ...log, status: reviewAction === 'APPROVE' ? 'APPROVED' : 'REJECTED', reviewer_comments: reviewComment }
+          : log
+      );
+      setLogs(updatedLogs);
+      setSelectedLog(null);
+      setReviewAction(null);
+      setReviewComment('');
+    }
