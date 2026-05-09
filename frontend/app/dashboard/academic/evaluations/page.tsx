@@ -16,8 +16,25 @@ import {
   Search,
   Plus,
   ChevronRight,
+
   ClipboardCheck,
   Star,
   Activity,
   UserCheck
-} 
+} from 'lucide-react';
+export default function EvaluationsPage() {
+  const { user } = useAuth();
+  const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStudent, setFilterStudent] = useState('ALL');
+  const [selectedEval, setSelectedEval] = useState<Evaluation | null>(null);
+  const [showEvalModal, setShowEvalModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    technical_score: 0,
+    soft_skills_score: 0,
+    attendance_score: 0,
+    conduct_score: 0,
+    summary_comments: '',
+    recommendation: ''
+  });
