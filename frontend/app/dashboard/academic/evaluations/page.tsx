@@ -201,3 +201,10 @@ export default function EvaluationsPage() {
               </div>
             </div>
 
+<div className="p-8 max-h-[70vh] overflow-y-auto space-y-8">
+              <div className="grid grid-cols-2 gap-6">
+                <ScoreInput
+                  label="Technical Competence"
+                  value={editFormData.technical_score}
+                  onChange={val => setEditFormData({ ...editFormData, technical_score: val })}
+                />
