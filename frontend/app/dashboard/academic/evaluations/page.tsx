@@ -113,3 +113,25 @@ export default function EvaluationsPage() {
       setSelectedEval(null);
     }
   };
+
+   return (
+    <DashboardLayout>
+      <PageHeader
+        title="Performance Evaluations"
+        subtitle="Submit final assessments and monitor student performance metrics."
+        actions={
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            New Assessment
+          </Button>
+        }
+      />
+
+      <div className="space-y-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Submitted" value={stats.submitted} icon={<ClipboardCheck />} color="text-emerald-500" />
+          <StatCard title="Pending" value={stats.pending} icon={<Activity />} color="text-amber-500" highlight={stats.pending > 0} />
+          <StatCard title="Avg Tech Score" value={`${stats.avgTechnical}%`} icon={<Zap />} color="text-indigo-500" />
+          <StatCard title="Class Average" value={`${stats.avgOverall}%`} icon={<TrendingUp />} color="text-primary" />
+        </div>
