@@ -108,3 +108,8 @@ export default function EvaluationsPage() {
           }
           : e
       );
+      setEvaluations(updatedEvaluations);
+      setShowEvalModal(false);
+      setSelectedEval(null);
+    }
+  };
