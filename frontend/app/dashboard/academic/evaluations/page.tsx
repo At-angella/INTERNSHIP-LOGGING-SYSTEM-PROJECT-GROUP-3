@@ -345,3 +345,22 @@ function ScoreBadge({ label, score }: any) {
     </div>
   );
 }
+
+function ScoreInput({ label, value, onChange }: { label: string, value: number, onChange: (val: number) => void }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</label>
+      <div className="relative">
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value={value}
+          onChange={e => onChange(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
+          className="w-full pl-4 pr-12 py-3 text-sm font-bold rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none transition-all"
+        />
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">/ 100</span>
+      </div>
+    </div>
+  );
+}
