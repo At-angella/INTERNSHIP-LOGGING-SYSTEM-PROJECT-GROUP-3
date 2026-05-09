@@ -159,3 +159,25 @@ export default function EvaluationsPage() {
             </div>
           </div>
         </Card>
+
+          {loading ? (
+          <div className="py-20 text-center">
+            <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Processing Scores...</p>
+          </div>
+        ) : filteredEvaluations.length === 0 ? (
+          <Card className="p-20 text-center" variant="panel">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Award className="w-8 h-8 text-slate-300" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No evaluations recorded</h3>
+            <p className="text-slate-500 text-sm">Select a student to begin their final performance review.</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredEvaluations.map(evaluation => (
+              <EvaluationCard key={evaluation.id} evaluation={evaluation} onEdit={() => handleEditEvaluation(evaluation)} />
+            ))}
+          </div>
+        )}
+      </div>
