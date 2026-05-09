@@ -310,3 +310,38 @@ function EvaluationCard({ evaluation, onEdit }: { evaluation: Evaluation, onEdit
           <ScoreBadge label="Attendance" score={evaluation.attendance_score} />
           <ScoreBadge label="Conduct" score={evaluation.conduct_score} />
         </div>
+
+         <div className="space-y-4">
+          {evaluation.summary_comments && (
+            <div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Feedback</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 italic line-clamp-2">"{evaluation.summary_comments}"</p>
+            </div>
+          )}
+          {evaluation.recommendation && (
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20">
+              <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <Star className="w-3 h-3" /> Recommendation
+              </p>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">{evaluation.recommendation}</p>
+            </div>
+          )}
+        </div>
+
+        <Button variant="outline" className="w-full h-10 text-[10px] font-black uppercase tracking-widest group" onClick={onEdit}>
+          Update Assessment
+          <ChevronRight className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function ScoreBadge({ label, score }: any) {
+  return (
+    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-center">
+      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mb-0.5">{label}</p>
+      <p className="text-xs font-black text-slate-900 dark:text-white">{score || 0}</p>
+    </div>
+  );
+}
