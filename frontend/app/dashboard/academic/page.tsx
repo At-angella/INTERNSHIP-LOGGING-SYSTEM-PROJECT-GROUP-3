@@ -179,3 +179,36 @@ const pendingApprovals = weeklyLogs.filter(l => l.status === 'REVIEWED').length;
                 )}
               </div>
             </Card>
+
+ <Card className="p-6 bg-linear-to-br from-indigo-600 to-indigo-800 text-white shadow-xl shadow-indigo-500/20">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold">Next Site Visit</h4>
+              </div>
+              <p className="text-indigo-100 text-xs mb-4">You have a site visit scheduled for Wednesday at Makerere Innovation Centre.</p>
+              <Button variant="ghost" className="text-white hover:bg-white/10 w-full font-bold text-[10px] uppercase tracking-widest">
+                View Schedule
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+function StatCard({ title, value, icon, color, highlight = false }: { title: string, value: number, icon: React.ReactNode, color: string, highlight?: boolean }) {
+  return (
+    <Card className={`p-6 relative overflow-hidden group ${highlight ? 'ring-2 ring-amber-500/50 animate-pulse' : ''}`} hoverable>
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</h3>
+      </div>
+      <div className={`absolute top-4 right-4 ${color} opacity-20 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
+        {icon}
+      </div>
+    </Card>
+  );
+}
