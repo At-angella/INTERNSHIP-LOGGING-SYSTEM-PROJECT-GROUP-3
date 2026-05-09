@@ -18,4 +18,35 @@ import {
   AlertCircle, 
   ArrowRight,
   FileText
-} 
+} from 'lucide-react';
+
+export default function LogsPage() {
+  const { user } = useAuth();
+  const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
+  const [logs, setLogs] = useState<WeeklyLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('PENDING');
+  const [filterStudent, setFilterStudent] = useState('ALL');
+  const [selectedLog, setSelectedLog] = useState<WeeklyLog | null>(null);
+  const [reviewAction, setReviewAction] = useState<'APPROVE' | 'REJECT' | null>(null);
+  const [reviewComment, setReviewComment] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [placementsData, logsData] = await Promise.all([
+          api.getPlacements(),
+          api.getWeeklyLogs(),
+        ]);
+        
+        setPlacements(placementsData.results || placementsData || []);
+        setLogs(logsData.results || logsData || []);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (user) fetchData();
+  }, [user]);
