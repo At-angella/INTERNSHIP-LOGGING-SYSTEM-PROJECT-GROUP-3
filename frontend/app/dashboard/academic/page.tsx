@@ -148,3 +148,34 @@ const pendingApprovals = weeklyLogs.filter(l => l.status === 'REVIEWED').length;
               </table>
             </div>
           </Card>
+
+          {/* Side Panels */}
+          <div className="space-y-6">
+            <Card className="p-6" variant="glass">
+              <h3 className="font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                Pending Actions
+              </h3>
+              <div className="space-y-3">
+                {weeklyLogs.filter(l => l.status === 'REVIEWED').slice(0, 3).map(log => (
+                  <div key={log.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 hover:border-primary/30 transition-all cursor-pointer group">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Week {log.week_number}</p>
+                      <Statusbar status={log.status} />
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-500 mb-3">{log.placement?.student?.first_name} {log.placement?.student?.last_name}</p>
+                    <Link href={`/dashboard/academic/logs/${log.id}`}>
+                      <Button variant="outline" size="sm" className="w-full h-8 text-[10px] font-bold uppercase tracking-widest group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                        Approve Log
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
+                {pendingApprovals === 0 && (
+                  <div className="text-center py-8 opacity-50">
+                    <ClipboardCheck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                    <p className="text-xs">No pending approvals</p>
+                  </div>
+                )}
+              </div>
+            </Card>
