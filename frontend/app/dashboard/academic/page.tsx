@@ -6,3 +6,16 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { InternshipPlacement, WeeklyLog, Evaluation } from '@/lib/types';
 import Link from 'next/link';
+import { 
+  GraduationCap, 
+  FileText, 
+  ClipboardCheck, 
+  Search, 
+  TrendingUp, 
+  Calendar,
+  AlertCircle,
+  Users,
+  ChevronRight,
+  Plus,
+  BarChart3
+} from 'lucide-react';
