@@ -289,3 +289,24 @@ function EvaluationCard({ evaluation, onEdit }: { evaluation: Evaluation, onEdit
           {grade || '-'}
         </div>
       </div>
+
+<div className="p-6 space-y-6">
+        <div className="space-y-2">
+          <div className="flex justify-between items-end">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Performance Score</span>
+            <span className="text-sm font-black text-slate-900 dark:text-white">{score.toFixed(1)}%</span>
+          </div>
+          <div className="h-2 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ${score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-indigo-500' : 'bg-amber-500'}`}
+              style={{ width: `${score}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <ScoreBadge label="Technical" score={evaluation.technical_score} />
+          <ScoreBadge label="Soft Skills" score={evaluation.soft_skills_score} />
+          <ScoreBadge label="Attendance" score={evaluation.attendance_score} />
+          <ScoreBadge label="Conduct" score={evaluation.conduct_score} />
+        </div>
