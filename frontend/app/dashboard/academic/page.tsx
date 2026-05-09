@@ -44,3 +44,27 @@ export default function AcademicDashboard() {
     };
       if (user) fetchData();
   }, [user]);
+const pendingApprovals = weeklyLogs.filter(l => l.status === 'REVIEWED').length;
+
+  return (
+    <DashboardLayout>
+      <PageHeader 
+        title={`Good morning, ${user?.first_name} 👋`}
+        subtitle="Overview of your supervised students and pending approvals."
+        actions={
+          <div className="flex gap-3">
+            <Link href="/dashboard/academic/students">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Users className="w-4 h-4" />
+                Student List
+              </Button>
+            </Link>
+            <Link href="/dashboard/academic/reports">
+              <Button size="sm" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Final Reports
+              </Button>
+            </Link>
+          </div>
+        }
+      />
