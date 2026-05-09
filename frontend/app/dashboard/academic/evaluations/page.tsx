@@ -53,7 +53,8 @@ export default function EvaluationsPage() {
         console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
-      }};
+      }
+    };
 
     if (user) fetchData();
   }, [user]);
