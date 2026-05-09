@@ -181,3 +181,22 @@ export default function EvaluationsPage() {
           </div>
         )}
       </div>
+
+       {/* Evaluation Modal */}
+      {showEvalModal && selectedEval && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-300">
+          <Card className="w-full max-w-2xl p-0 overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-500" variant="panel">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white">Performance Review</h2>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">
+                  {selectedEval.placement?.student?.first_name} {selectedEval.placement?.student?.last_name}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Current Grade</span>
+                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-black text-lg">
+                  {selectedEval.final_grade || '-'}
+                </div>
+              </div>
+            </div>
