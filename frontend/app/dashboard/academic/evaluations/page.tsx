@@ -96,3 +96,15 @@ export default function EvaluationsPage() {
       else if (avgScore >= 80) grade = 'A';
       else if (avgScore >= 70) grade = 'B+';
       else if (avgScore >= 60) grade = 'B';
+
+       const updatedEvaluations = evaluations.map(e =>
+        e.id === selectedEval.id
+          ? {
+            ...e,
+            ...editFormData,
+            total_weighted_score: avgScore,
+            final_grade: grade,
+            is_submitted: true
+          }
+          : e
+      );
