@@ -42,3 +42,5 @@ export default function AcademicDashboard() {
         setLoading(false);
       }
     };
+      if (user) fetchData();
+  }, [user]);
