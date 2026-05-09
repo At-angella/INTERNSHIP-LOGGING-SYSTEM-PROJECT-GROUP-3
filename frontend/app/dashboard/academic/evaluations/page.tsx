@@ -70,6 +70,7 @@ export default function EvaluationsPage() {
     avgTechnical: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.technical_score || 0), 0) / evaluations.length).toFixed(1) : 0,
     avgOverall: evaluations.length > 0 ? (evaluations.reduce((sum, e) => sum + (e.total_weighted_score || 0), 0) / evaluations.length).toFixed(1) : 0,
   };
+
    const uniqueStudents = Array.from(
     new Map(placements.map(p => [p.id, { id: p.id, name: `${p.student?.first_name} ${p.student?.last_name}` }])).values()
   );
@@ -86,3 +87,12 @@ export default function EvaluationsPage() {
     });
     setShowEvalModal(true);
   };
+
+  const handleSubmitEvaluation = () => {
+    if (selectedEval) {
+      const avgScore = (editFormData.technical_score + editFormData.soft_skills_score + editFormData.attendance_score + editFormData.conduct_score) / 4;
+      let grade = 'C';
+      if (avgScore >= 90) grade = 'A+';
+      else if (avgScore >= 80) grade = 'A';
+      else if (avgScore >= 70) grade = 'B+';
+      else if (avgScore >= 60) grade = 'B';
