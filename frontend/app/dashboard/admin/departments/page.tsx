@@ -15,3 +15,26 @@ import {
   Activity,
   Layers
 } from 'lucide-react';
+
+export default function DepartmentsAdminPage() {
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await api.getDepartments();
+        setDepartments(data || []);
+      } catch (error) {
+        console.error('Failed to fetch departments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <DashboardLayout>
+      <PageHeader 
+        title="Departmental Hierarchy"
