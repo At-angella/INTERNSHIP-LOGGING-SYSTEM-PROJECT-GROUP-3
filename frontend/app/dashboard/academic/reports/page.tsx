@@ -5,3 +5,18 @@ import { Card, Button } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { InternshipPlacement, WeeklyLog, Evaluation } from '@/lib/types';
+import { 
+  FileText, 
+  Download, 
+  Filter, 
+  TrendingUp, 
+  Users, 
+  BookOpen, 
+  Award,
+  ChevronRight,
+  PieChart,
+  BarChart3,
+  Calendar,
+  Search,
+  Building
+}
