@@ -71,3 +71,18 @@ export default function DepartmentsAdminPage() {
     </DashboardLayout>
   );
 }
+
+function StatCard({ title, value, icon, color }: any) {
+  return (
+    <Card className="p-6 relative overflow-hidden group" hoverable>
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</h3>
+      </div>
+      <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
+        {icon}
+      </div>
+    </Card>
+  );
+}
+
