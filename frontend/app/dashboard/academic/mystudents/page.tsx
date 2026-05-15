@@ -89,3 +89,5 @@ export default function MyStudentsPage() {
     completed: placements.filter(p => p.status === 'COMPLETED').length,
     pending: placements.filter(p => p.status === 'PENDING' || p.status === 'ON_HOLD').length,
   };
+
+  
