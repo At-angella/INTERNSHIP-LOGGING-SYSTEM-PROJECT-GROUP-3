@@ -247,3 +247,83 @@ export default function StudentsPage() {
     </DashboardLayout>
   );
 }
+
+function QuickStatCard({ title, value, icon, color, highlight = false }: { title: string, value: number, icon: React.ReactNode, color: string, highlight?: boolean }) {
+  return (
+    <Card className={`p-6 relative overflow-hidden group ${highlight ? 'ring-2 ring-amber-500/50' : ''}`} hoverable>
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</h3>
+      </div>
+      <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
+        {icon}
+      </div>
+    </Card>
+  );
+}
+
+function StudentGridCard({ placement, logsCount, approvedLogs, totalHours, evaluation, hasEvaluation }: any) {
+  const progress = logsCount > 0 ? (approvedLogs / logsCount) * 100 : 0;
+  
+  return (
+    <Card className="overflow-hidden border-t-4 border-t-slate-200 dark:border-t-slate-800 hover:border-t-primary transition-all duration-300" variant="panel">
+      <div className={`h-24 p-6 flex justify-between items-start ${placement.status === 'ACTIVE' ? 'bg-linear-to-br from-emerald-500/10 to-emerald-600/5' : 'bg-linear-to-br from-indigo-500/10 to-indigo-600/5'}`}>
+        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-lg flex items-center justify-center text-primary font-black text-xl">
+          {placement.student?.first_name[0]}{placement.student?.last_name[0]}
+        </div>
+        <Statusbar status={placement.status} />
+      </div>
+      
+      <div className="p-6 pt-10 relative">
+        <div className="mb-6">
+          <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+            {placement.student?.first_name} {placement.student?.last_name}
+          </h3>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">ID: {placement.student?.student_id}</p>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+            <Briefcase className="w-4 h-4 text-primary/50" />
+            <span className="font-semibold">{placement.position_title}</span>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+            <MapPin className="w-4 h-4 text-primary/50" />
+            <span className="font-medium">{placement.workplace?.name}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Approved Logs</p>
+            <p className="text-sm font-black text-slate-900 dark:text-white">{approvedLogs}/{logsCount}</p>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Grade</p>
+            <p className="text-sm font-black text-slate-900 dark:text-white">{hasEvaluation ? evaluation.final_grade : 'N/A'}</p>
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-6">
+          <div className="flex justify-between items-center text-[10px] font-bold">
+            <span className="text-slate-400 uppercase tracking-widest">Log Progress</span>
+            <span className="text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary rounded-full transition-all duration-500" 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        <Link href={`/dashboard/academic/students/${placement.id}`}>
+          <Button variant="outline" size="sm" className="w-full text-[10px] font-bold uppercase tracking-widest h-10 group/btn">
+            View Full Profile
+            <ChevronRight className="w-3 h-3 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+          </Button>
+        </Link>
+      </div>
+    </Card>
+  );
+}
