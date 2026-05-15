@@ -81,3 +81,10 @@ export default function StudentsPage() {
       hasEvaluation: !!studentEval
     };
   });
+
+   const stats = {
+    total: placements.length,
+    active: placements.filter(p => p.status === 'ACTIVE').length,
+    completed: placements.filter(p => p.status === 'COMPLETED').length,
+    pending: placements.filter(p => p.status === 'PENDING' || p.status === 'ON_HOLD').length,
+  };
