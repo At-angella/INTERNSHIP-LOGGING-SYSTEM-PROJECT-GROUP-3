@@ -364,3 +364,4 @@ function ScoreInput({ label, value, onChange }: { label: string, value: number, 
     </div>
   );
 }
+
