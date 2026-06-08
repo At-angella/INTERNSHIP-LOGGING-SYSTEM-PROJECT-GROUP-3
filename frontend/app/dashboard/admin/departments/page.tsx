@@ -85,3 +85,50 @@ function StatCard({ title, value, icon, color }: any) {
     </Card>
   );
 }
+
+
+
+function DepartmentCard({ dept }: { dept: any }) {
+  return (
+    <Card className="p-8 hover:border-primary/30 transition-all group overflow-hidden relative" variant="panel">
+      <div className="relative z-10">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+            <Building className="w-7 h-7" />
+          </div>
+          <div>
+            <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+              {dept.name}
+            </h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CODE: {dept.code || 'CS-IT'}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Supervisor Capacity</p>
+            <p className="text-xl font-black text-slate-900 dark:text-white">12/15</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Total Interns</p>
+            <p className="text-xl font-black text-slate-900 dark:text-white">86</p>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 text-[10px] font-black uppercase tracking-widest h-11">
+            View Staff
+          </Button>
+          <Button className="flex-1 text-[10px] font-black uppercase tracking-widest h-11">
+            Edit Profile
+          </Button>
+        </div>
+      </div>
+      
+      {/* Background Decor */}
+      <div className="absolute -right-10 -bottom-10 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700">
+        <Building className="w-48 h-48" />
+      </div>
+    </Card>
+  );
+}
