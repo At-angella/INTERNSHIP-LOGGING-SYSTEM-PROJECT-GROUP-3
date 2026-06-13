@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button, Input, Card } from '@/components/ui';
 import { 
   User, Mail, Hash, BookOpen, 
-  Phone, Building, GraduationCap, ArrowRight
+  Phone, Building, ArrowRight
 } from 'lucide-react';
 
 const Register = () => {
@@ -81,9 +82,13 @@ const Register = () => {
       <div className="w-full max-w-3xl animate-in fade-in zoom-in-95 duration-700">
         <Card className="p-8 sm:p-12" variant="panel">
           <div className="flex flex-col items-center mb-10 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg mb-6">
-              <GraduationCap className="w-10 h-10" />
-            </div>
+            <Image
+              src="/institution_logo-ADF-1737480805029.jpg"
+              alt="Institution Logo"
+              width={64}
+              height={64}
+              className="rounded-2xl shadow-lg mb-6"
+            />
             <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Student Registration</h1>
             <p className="text-slate-500 dark:text-slate-400">Join the internship management platform</p>
           </div>
