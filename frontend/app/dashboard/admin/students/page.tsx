@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout, PageHeader } from '@/components/layout';
 import { Card, Button } from '@/components/ui';
 import { api } from '@/lib/api';
-import { User } from '@/lib/types';
+import { User, Student } from '@/lib/types';
 import { 
   Users, 
   Search, 
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function StudentsAdminPage() {
-  const [students, setStudents] = useState<User[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -27,7 +27,7 @@ export default function StudentsAdminPage() {
     const fetchData = async () => {
       try {
         const users = await api.getUsers();
-        setStudents(users.filter((u: User) => u.role === 'STUDENT'));
+        setStudents(users.filter((u: User) => u.role === 'STUDENT') as Student[]);
       } catch (error) {
         console.error('Failed to fetch students:', error);
       } finally {
@@ -39,7 +39,7 @@ export default function StudentsAdminPage() {
 
   const filteredStudents = students.filter(s => 
     `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.student_id?.toLowerCase().includes(searchTerm.toLowerCase())
+    s.student_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -83,11 +83,59 @@ export default function StudentsAdminPage() {
             <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Accessing Student Files...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredStudents.map(student => (
-              <StudentGridCard key={student.id} student={student} />
-            ))}
-          </div>
+          <Card className="p-0 overflow-hidden" variant="panel">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900/50">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student ID</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">College</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Program</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredStudents.map(student => (
+                    <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px]">
+                            {student.first_name[0]}{student.last_name[0]}
+                          </div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{student.first_name} {student.last_name}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{student.student_id}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate">{student.email}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{student.college}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">{student.program}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${student.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
+                          {student.is_active ? 'Active' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         )}
       </div>
     </DashboardLayout>
@@ -103,46 +151,6 @@ function StatCard({ title, value, icon, color }: any) {
       </div>
       <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
         {icon}
-      </div>
-    </Card>
-  );
-}
-
-function StudentGridCard({ student }: { student: User }) {
-  return (
-    <Card className="p-6 hover:border-primary/30 transition-all group" variant="panel">
-      <div className="flex justify-between items-start mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary font-black text-lg border border-slate-200 dark:border-slate-700">
-          {student.first_name[0]}{student.last_name[0]}
-        </div>
-        <button className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white">
-          <MoreVertical className="w-4 h-4" />
-        </button>
-      </div>
-      
-      <div className="space-y-4">
-        <div>
-          <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-            {student.first_name} {student.last_name}
-          </h4>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {student.student_id}</p>
-        </div>
-
-        <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-            <GraduationCap className="w-4 h-4 text-primary/50" />
-            <span>Computing & Information Technology</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-            <Mail className="w-4 h-4 text-primary/50" />
-            <span className="truncate">{student.email}</span>
-          </div>
-        </div>
-
-        <Button variant="ghost" size="sm" className="w-full mt-2 text-[10px] font-black uppercase tracking-widest h-10">
-          View Portfolio
-          <ChevronRight className="w-3 h-3 ml-1" />
-        </Button>
       </div>
     </Card>
   );
