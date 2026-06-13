@@ -196,6 +196,61 @@ export const mockPlacements: InternshipPlacement[] = [
       pending_logs: 0,
     },
   },
+  {
+    id: 3,
+    student: {
+      id: 5,
+      email: 'john.doe@students.mak.ac.ug',
+      first_name: 'John',
+      last_name: 'Doe',
+      role: 'STUDENT',
+      role_display: 'Student',
+      is_active: true,
+      student_id: '260012345',
+      registration_number: '25/U/12345/EVE',
+      college: 'CoCIS',
+      program: 'BSc Computer Science',
+    } as any,
+    workplace: mockWorkplaces[0],
+    academic_supervisor: {
+      id: 2,
+      email: 'supervisor@mak.ac.ug',
+      first_name: 'Mathias',
+      last_name: 'Supervisor',
+      role: 'ACADEMIC_SUPERVISOR',
+      role_display: 'Academic Supervisor',
+      is_active: true,
+      staff_id: 'STAFF001',
+      faculty: 'Computing and IT',
+      department: 'Computer Science',
+      specialization: 'Software Engineering',
+      max_students: 10,
+    } as any,
+    workplace_supervisor: {
+      id: 3,
+      email: 'workplace@company.com',
+      first_name: 'Hyalo Richard',
+      last_name: 'Mentor',
+      role: 'WORKPLACE_SUPERVISOR',
+      role_display: 'Workplace Supervisor',
+      is_active: true,
+      job_title: 'Senior Developer',
+      workplace_department: 'Engineering',
+      years_of_experience: 8,
+    } as any,
+    department: mockDepartments[0],
+    start_date: '2026-06-01',
+    end_date: '2026-12-31',
+    status: 'ACTIVE',
+    status_display: 'Active',
+    position_title: 'Intern Software Developer',
+    description: 'Working on full-stack web applications and UI layouts.',
+    log_progress: {
+      total_logs: 12,
+      approved_logs: 4,
+      pending_logs: 1,
+    },
+  },
 ];
 
 // Mock Weekly Logs
@@ -305,11 +360,15 @@ export const mockApiData = {
     }));
   },
 
-  async getPlacements() {
+  async getPlacements(params?: any) {
     await delay();
+    let results = mockPlacements;
+    if (params?.student_id) {
+      results = mockPlacements.filter(p => p.student.id === params.student_id);
+    }
     return {
-      count: mockPlacements.length,
-      results: mockPlacements,
+      count: results.length,
+      results: results,
     };
   },
 

@@ -137,7 +137,7 @@ export default function LoginPage() {
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-6 text-center uppercase tracking-widest">
               Access Accounts
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {mockUsers.map(u => (
                 <button
                   key={u.id}

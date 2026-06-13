@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button, Input, Card } from '@/components/ui';
+import { api } from '@/lib/api';
 import { 
   User, Mail, Hash, BookOpen, 
   Phone, Building, ArrowRight
@@ -67,11 +68,11 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await api.registerStudent(formData);
       setSuccessMessage('Registration successful! Redirecting to login...');
       setTimeout(() => router.push('/login'), 2000);
-    } catch (error) {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+    } catch (error: any) {
+      setErrors({ submit: error.message || 'Registration failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

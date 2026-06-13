@@ -83,7 +83,20 @@ class ApiClient {
   async login(email: string, password: string) {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 500));
-      const mockUser = mockUsers.find(u => u.email === email);
+      
+      let mockUser = mockUsers.find(u => u.email === email);
+      
+      // Look in dynamically registered users
+      if (!mockUser && typeof window !== 'undefined') {
+        const stored = localStorage.getItem('registeredUsers') || '[]';
+        try {
+          const users = JSON.parse(stored);
+          mockUser = users.find((u: any) => u.email === email);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       if (!mockUser) throw new Error('Invalid email or password');
       
       const token = 'mock_token_' + Date.now();
@@ -112,7 +125,40 @@ class ApiClient {
     return this.request('/users/me/');
   }
 
-  registerStudent(data: any) {
+  async registerStudent(data: any) {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const newUser = {
+        id: Date.now(),
+        email: data.email,
+        password: 'password123', // Default password for newly registered users
+        first_name: data.firstName || data.first_name,
+        last_name: data.lastName || data.last_name,
+        role: 'STUDENT' as const,
+        student_id: data.studentNumber || data.student_id,
+        registration_number: data.registrationNumber || data.registration_number,
+        college: data.college,
+        program: data.program,
+        phone_number: data.phoneNumber || data.phone_number,
+        is_active: true,
+      };
+
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('registeredUsers') || '[]';
+        try {
+          const users = JSON.parse(stored);
+          if (!users.some((u: any) => u.email === newUser.email)) {
+            users.push(newUser);
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+          }
+        } catch (e) {
+          localStorage.setItem('registeredUsers', JSON.stringify([newUser]));
+        }
+      }
+      return { message: 'Registration successful', user: newUser };
+    }
+
     return this.request('/auth/register/student/', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -132,7 +178,7 @@ class ApiClient {
 
   // Placements
   async getPlacements(params?: any) {
-    if (USE_MOCK_DATA) return mockApiData.getPlacements();
+    if (USE_MOCK_DATA) return mockApiData.getPlacements(params);
     const query = params ? '?' + new URLSearchParams(params) : '';
     return this.request(`/placements/${query}`);
   }

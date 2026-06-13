@@ -40,6 +40,14 @@ export const mockUsers: MockUser[] = [
     first_name: 'Admin',
     last_name: 'User',
     role: 'ADMIN'
+  },
+  {
+    id: 5,
+    email: 'john.doe@students.mak.ac.ug',
+    password: 'password123',
+    first_name: 'John',
+    last_name: 'Doe',
+    role: 'STUDENT'
   }
 ];
 
