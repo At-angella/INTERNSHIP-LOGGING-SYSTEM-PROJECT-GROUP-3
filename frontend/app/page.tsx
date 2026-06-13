@@ -16,7 +16,7 @@ export default function Home() {
             Internship Logging & Evaluation System
           </div>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Elevate Your <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">Internship Experience</span>
+            Elevate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Internship Experience</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
             The comprehensive platform for students, supervisors, and academic staff to manage, log, and evaluate internships seamlessly.
@@ -59,7 +59,7 @@ export default function Home() {
 function FeatureCard({ title, description, icon }: FeatureCardProps) {
   return (
     <div className="glass-card p-8 flex flex-col items-center text-center space-y-4 hover:border-primary/50 group cursor-default">
-      <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
         <span className="group-hover:rotate-12 transition-transform duration-300 inline-block">{icon}</span>
       </div>
       <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
