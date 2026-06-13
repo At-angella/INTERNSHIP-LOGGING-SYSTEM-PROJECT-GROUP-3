@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
-  
   // Turbopack config (empty is fine)
   turbopack: {},
 };
