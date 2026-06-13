@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Input, Card } from '@/components/ui';
 import { 
   User, Mail, Hash, BookOpen, 
-  Phone, Building, ArrowRight
+  Phone, Building, ArrowRight, Lock
 } from 'lucide-react';
 
 const Register = () => {
@@ -16,6 +16,7 @@ const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     role: 'STUDENT',
     phoneNumber: '',
     studentNumber: '',
@@ -37,6 +38,9 @@ const Register = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!emailRegex.test(formData.email)) newErrors.email = 'Enter a valid email';
+
+    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
     if (!formData.role) newErrors.role = 'Role is required';
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Required';
@@ -138,6 +142,17 @@ const Register = () => {
                 placeholder="john.doe@students.mak.ac.ug"
                 error={errors.email}
                 icon={<Mail className="w-5 h-5" />}
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter a strong password"
+                error={errors.password}
+                icon={<Lock className="w-5 h-5" />}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
