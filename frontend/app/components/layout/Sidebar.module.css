@@ -1,0 +1,235 @@
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 280px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-right: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 40;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: #f1f5f9;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.userInfo {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  position: relative;
+  font-weight: 500;
+}
+
+.menuItem:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+}
+
+.menuItem.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-left-color: #3b82f6;
+}
+
+.activeIndicator {
+  position: absolute;
+  right: 0;
+  width: 3px;
+  height: 100%;
+  background-color: #3b82f6;
+}
+
+.footer {
+  padding: 1.5rem;
+  border-top: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.logoutBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(220, 38, 38, 0.3);
+  color: #fecaca;
+}
+
+.mobileToggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobileToggle:hover {
+  background-color: #2563eb;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 30;
+  display: none;
+}
+
+/* Tablet and below (768px) */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .open {
+    transform: translateX(0);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobileToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay {
+    display: block;
+  }
+
+  .header {
+    padding: 1.25rem;
+  }
+
+  .menu {
+    padding: 0.75rem 0;
+  }
+
+  .menuItem {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .footer {
+    padding: 1.25rem;
+  }
+}
+
+/* Mobile (640px and below) */
+@media (max-width: 640px) {
+  .sidebar {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .mobileToggle {
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.375rem;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+
+  .logo {
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .menu {
+    padding: 0.5rem 0;
+  }
+
+  .menuItem {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .footer {
+    padding: 1rem;
+  }
+
+  .userInfo {
+    padding: 0.75rem 1rem;
+  }
+
+  .logoutBtn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+

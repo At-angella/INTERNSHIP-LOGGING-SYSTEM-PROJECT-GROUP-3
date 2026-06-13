@@ -2,7 +2,7 @@ import { mockApiData, mockUsers } from './mockData';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://internship-logging-system-project-group-3.onrender.com/api';
 // Use mock data only if explicitly requested via env var
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
 
 class ApiClient {
   private token: string | null = null;

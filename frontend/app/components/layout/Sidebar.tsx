@@ -1,6 +1,7 @@
 'use client';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -91,9 +92,13 @@ export function Sidebar() {
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.header}>
           <Link href="/dashboard" className={styles.logo}>
-            <div className="w-10 h-10 bg-linear-to-br from-primary to-secondary rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-primary/20">
-              ILES
-            </div>
+            <Image
+                          src="/institution_logo-ADF-1737480805029.jpg"
+                          alt="Institution Logo"
+                          width={64}
+                          height={64}
+                          className="rounded-2xl shadow-lg mb-6"
+                        />
             <div>
               <div className="text-sm font-bold text-white tracking-tight leading-none mb-1">Internship Hub</div>
               <div className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Management System</div>
