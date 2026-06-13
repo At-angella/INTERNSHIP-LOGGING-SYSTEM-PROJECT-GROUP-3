@@ -57,7 +57,7 @@ export default function InternsPage() {
     total: placements.length,
     active: placements.filter(p => p.status === 'ACTIVE').length,
     completed: placements.filter(p => p.status === 'COMPLETED').length,
-    pending: placements.filter(p => p.status === 'PENDING' || p.status === 'ON_HOLD').length,
+    pending: placements.filter(p => p.status === 'PENDING').length,
   };
 
   return (
@@ -103,9 +103,9 @@ export default function InternsPage() {
                 className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:ring-2 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="ALL">All Statuses</option>
+                <option value="PENDING">Pending</option>
                 <option value="ACTIVE">Currently Active</option>
                 <option value="COMPLETED">Completed Term</option>
-                <option value="ON_HOLD">Temporary Hold</option>
               </select>
             </div>
             <div className="text-right">
@@ -130,11 +130,75 @@ export default function InternsPage() {
             <p className="text-slate-500 text-sm">No students match the current filter criteria.</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredPlacements.map(placement => (
-              <InternGridCard key={placement.id} placement={placement} />
-            ))}
-          </div>
+          <Card className="p-0 overflow-hidden" variant="panel">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900/50">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Position</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">End Date</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Progress</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {filteredPlacements.map(placement => {
+                    const progress = placement.log_progress ? (placement.log_progress.approved_logs / (placement.log_progress.total_logs || 1)) * 100 : 0;
+                    return (
+                      <tr key={placement.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px]">
+                              {placement.student?.first_name[0]}{placement.student?.last_name[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{placement.student?.first_name} {placement.student?.last_name}</p>
+                              <p className="text-[10px] text-slate-500">ID: {placement.student?.student_id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{placement.position_title}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-xs text-slate-600 dark:text-slate-400">{placement.department?.name || 'Computing & IT'}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{new Date(placement.end_date).toLocaleDateString()}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-primary">{Math.round(progress)}%</span>
+                            <div className="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary rounded-full" style={{ width: `${progress}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Statusbar status={placement.status} />
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <Link href={`/dashboard/workplace/interns/${placement.id}`}>
+                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                              <MessageSquare className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         )}
       </div>
     </DashboardLayout>
@@ -150,66 +214,6 @@ function StatCard({ title, value, icon, color, highlight = false }: any) {
       </div>
       <div className={`absolute top-4 right-4 ${color} opacity-10 group-hover:opacity-40 group-hover:scale-110 transition-all duration-500 [&_svg]:size-10`}>
         {icon}
-      </div>
-    </Card>
-  );
-}
-
-function InternGridCard({ placement }: { placement: InternshipPlacement }) {
-  const progress = placement.log_progress ? (placement.log_progress.approved_logs / (placement.log_progress.total_logs || 1)) * 100 : 0;
-  
-  return (
-    <Card className="overflow-hidden border-t-4 border-t-slate-200 dark:border-t-slate-800 hover:border-t-primary transition-all duration-500 group" variant="panel">
-      <div className={`h-24 p-6 flex justify-between items-start ${placement.status === 'ACTIVE' ? 'bg-linear-to-br from-emerald-500/10 to-emerald-600/5' : 'bg-linear-to-br from-indigo-500/10 to-indigo-600/5'}`}>
-        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-xl flex items-center justify-center text-primary font-black text-xl border border-slate-100 dark:border-slate-800">
-          {placement.student?.first_name[0]}{placement.student?.last_name[0]}
-        </div>
-        <Statusbar status={placement.status} />
-      </div>
-
-      <div className="p-6 pt-10 space-y-6">
-        <div>
-          <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-            {placement.student?.first_name} {placement.student?.last_name}
-          </h3>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {placement.student?.student_id}</p>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-            <Briefcase className="w-4 h-4 text-primary/50" />
-            <span className="font-bold">{placement.position_title}</span>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-            <GraduationCap className="w-4 h-4 text-primary/50" />
-            <span>{placement.department?.name || 'Computing & IT'}</span>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-            <Calendar className="w-4 h-4 text-primary/50" />
-            <span className="font-medium">Ends {new Date(placement.end_date).toLocaleDateString()}</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-            <span className="text-slate-400">Activity Completion</span>
-            <span className="text-primary">{Math.round(progress)}%</span>
-          </div>
-          <div className="h-1.5 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-          <Link href={`/dashboard/workplace/interns/${placement.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full h-10 text-[10px] font-black uppercase tracking-widest">
-              Profile
-            </Button>
-          </Link>
-          <Button size="sm" className="h-10 w-10 p-0 rounded-xl" title="Contact Intern">
-            <MessageSquare className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
     </Card>
   );
