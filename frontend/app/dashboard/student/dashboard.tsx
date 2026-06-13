@@ -1,4 +1,7 @@
 'use client';
+
+export const dynamic = 'force-dynamic';
+
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/lib/auth';
 import { FileText, Clock, CheckCircle, AlertCircle, ChevronRight, Calendar, Briefcase } from 'lucide-react';
