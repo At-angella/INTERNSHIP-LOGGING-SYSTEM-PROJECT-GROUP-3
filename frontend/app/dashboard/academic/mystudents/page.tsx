@@ -87,7 +87,7 @@ export default function MyStudentsPage() {
     total: placements.length,
     active: placements.filter(p => p.status === 'ACTIVE').length,
     completed: placements.filter(p => p.status === 'COMPLETED').length,
-    pending: placements.filter(p => p.status === 'PENDING' || p.status === 'ON_HOLD').length,
+    pending: placements.filter(p => p.status === 'PENDING').length,
   };
 
   return (
@@ -143,9 +143,9 @@ export default function MyStudentsPage() {
                 className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:ring-2 focus:ring-primary outline-none transition-all appearance-none"
               >
                 <option value="ALL">All Status</option>
+                <option value="PENDING">Pending</option>
                 <option value="ACTIVE">Active</option>
                 <option value="COMPLETED">Completed</option>
-                <option value="ON_HOLD">On Hold</option>
               </select>
             </div>
             <div className="text-right">
