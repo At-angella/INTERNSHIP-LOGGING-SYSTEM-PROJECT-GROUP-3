@@ -15,7 +15,7 @@ class CustomUserManager(BaseUserManager):
     ROLE_EMAIL_DOMAINS = {
         'ADMIN': '@mak.ac.ug',
         'STUDENT': '@student.mak.ac.ug ',
-        'ACADAMIC_SUPERVISOR': '@mak.ac.ug',
+        'ACADEMIC_SUPERVISOR': '@mak.ac.ug',
         'WORKPLACE_SUPERVISOR': '@mak.ac.ug',
     }
     ADMIN_ONLY_ROLES = {'ACADEMIC_SUPERVISOR', 'WORKPLACE_SUPERVISOR'}
