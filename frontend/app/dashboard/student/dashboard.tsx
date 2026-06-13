@@ -1,5 +1,5 @@
 'use client';
-import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/lib/auth';
 import { FileText, Clock, CheckCircle, AlertCircle, ChevronRight, Calendar, Briefcase } from 'lucide-react';
 import Link from 'next/link';
