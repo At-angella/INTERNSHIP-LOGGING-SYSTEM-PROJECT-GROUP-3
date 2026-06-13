@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://internship-logging-system-project-group-3.onrender.com/api',
     headers: {
         'Content-Type': 'application/json',
     },
