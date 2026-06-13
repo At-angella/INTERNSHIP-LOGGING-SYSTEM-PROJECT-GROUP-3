@@ -145,7 +145,7 @@ function LogListCard({ log }: { log: WeeklyLog }) {
               <div className="flex flex-col">
                 <span className="text-[8px] font-bold text-slate-400 uppercase">Submitted</span>
                 <span className="text-[10px] font-black text-slate-700 dark:text-slate-300">
-                  {log.submitted_date ? new Date(log.submitted_date).toLocaleDateString() : 'Pending'}
+                  {log.submitted_at ? new Date(log.submitted_at).toLocaleDateString() : 'Pending'}
                 </span>
               </div>
             </div>

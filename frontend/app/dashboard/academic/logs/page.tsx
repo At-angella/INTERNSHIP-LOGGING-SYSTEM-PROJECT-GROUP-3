@@ -76,7 +76,14 @@ export default function LogsPage() {
     if (selectedLog && reviewAction) {
       const updatedLogs = logs.map(log =>
         log.id === selectedLog.id
-          ? { ...log, status: reviewAction === 'APPROVE' ? 'APPROVED' : 'REJECTED', reviewer_comments: reviewComment }
+          ? { 
+              ...log, 
+              status: (reviewAction === 'APPROVE' ? 'APPROVED' : 'REJECTED') as 'APPROVED' | 'REJECTED',
+              supervisor_review: log.supervisor_review ? {
+                ...log.supervisor_review,
+                comments: reviewComment
+              } : null
+            }
           : log
       );
       setLogs(updatedLogs);
@@ -84,7 +91,7 @@ export default function LogsPage() {
       setReviewAction(null);
       setReviewComment('');
     }
-     };
+  };
 
   return (
     <DashboardLayout>
@@ -270,12 +277,12 @@ function LogReviewCard({ log, onReview }: { log: WeeklyLog, onReview: () => void
             <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-2">Activities Performed</p>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">{log.activities_performed}</p>
           </div>
-          {log.reviewer_comments && (
+          {log.supervisor_review?.comments && (
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
                 <MessageSquare className="w-3 h-3" /> Reviewer Feedback
               </p>
-              <p className="text-xs text-slate-500 italic">{log.reviewer_comments}</p>
+              <p className="text-xs text-slate-500 italic">{log.supervisor_review.comments}</p>
             </div>
           )}
         </div>
