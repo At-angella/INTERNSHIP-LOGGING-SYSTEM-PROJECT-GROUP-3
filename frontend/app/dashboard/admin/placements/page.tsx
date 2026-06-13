@@ -17,12 +17,16 @@ import {
   ShieldCheck,
   Globe,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Plus,
+  CheckCircle2,
+  Search
 } from 'lucide-react';
 
 export default function StudentPlacementPage() {
   const { user } = useAuth();
-  const [placement, setPlacement] = useState<InternshipPlacement | null>(null);
+  const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
 
@@ -40,7 +44,7 @@ export default function StudentPlacementPage() {
     fetchData();
   }, []);
 
-  const filteredPlacements = placements.filter(p => 
+  const filteredPlacements = placements.filter((p: InternshipPlacement) => 
     p.student?.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.workplace?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.position_title?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -100,7 +104,7 @@ export default function StudentPlacementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredPlacements.map(placement => (
+                  {filteredPlacements.map((placement: InternshipPlacement) => (
                     <tr key={placement.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
