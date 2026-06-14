@@ -160,22 +160,6 @@ export default function StudentPlacementPage() {
               />
             </div>
           </Card>
-
-          <Card className="p-8" variant="glass">
-            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Support</h3>
-            <p className="text-xs text-slate-500 leading-relaxed mb-8">
-              Need assistance with your placement? Contact your supervisor directly or reach out to the university placement office.
-            </p>
-            <div className="space-y-3">
-              <Button className="w-full h-12 gap-2 text-xs font-black uppercase tracking-widest">
-                <MessageSquare className="w-4 h-4" />
-                Open Support Ticket
-              </Button>
-              <Button variant="outline" className="w-full h-12 gap-2 text-xs font-black uppercase tracking-widest">
-                Guidelines PDF
-              </Button>
-            </div>
-          </Card>
         </div>
       </div>
     </DashboardLayout>
