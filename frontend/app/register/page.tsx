@@ -82,6 +82,7 @@ const Register = () => {
       await api.registerStudent({
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone_number: formData.phoneNumber,
@@ -221,7 +222,7 @@ const Register = () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  placeholder="+256..."
+                  placeholder="e.g., 0771234567"
                   error={errors.phoneNumber}
                   icon={<Phone className="w-5 h-5" />}
                 />
