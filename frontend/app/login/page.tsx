@@ -30,7 +30,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login(email, password);
+      const loggedInUser = await login(email, password);
       toast.success('✓ Login successful! Welcome back!', {
         position: 'top-right',
         autoClose: 3000,
@@ -39,7 +39,11 @@ export default function LoginPage() {
         pauseOnHover: true,
         draggable: true,
       });
-      router.push('/dashboard');
+      if (loggedInUser?.must_change_password) {
+        router.push('/change-password');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       const errorMsg = err.message || 'Login failed. Please check your credentials.';
       toast.error('✗ ' + errorMsg, {
@@ -60,7 +64,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      await login(mockUser.email, mockUser.password);
+      const loggedInUser = await login(mockUser.email, mockUser.password);
       toast.success('✓ Login successful! Welcome back!', {
         position: 'top-right',
         autoClose: 3000,
@@ -69,7 +73,11 @@ export default function LoginPage() {
         pauseOnHover: true,
         draggable: true,
       });
-      router.push('/dashboard');
+      if (loggedInUser?.must_change_password) {
+        router.push('/change-password');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       const errorMsg = err.message || 'Login failed.';
       toast.error('✗ ' + errorMsg, {

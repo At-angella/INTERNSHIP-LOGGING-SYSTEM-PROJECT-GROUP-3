@@ -119,7 +119,27 @@ class ApiClient {
     });
   }
 
-  changePassword(oldPassword: string, newPassword: string) {
+  async changePassword(oldPassword: string, newPassword: string) {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // update password of mock user
+      if (typeof window !== 'undefined') {
+        const userStr = localStorage.getItem('mockUser');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          user.must_change_password = false;
+          localStorage.setItem('mockUser', JSON.stringify(user));
+          
+          // also update password in mockUsers list
+          const listUser = mockUsers.find(u => u.email === user.email);
+          if (listUser) {
+            listUser.password = newPassword;
+            (listUser as any).must_change_password = false;
+          }
+        }
+      }
+      return { message: 'Password changed successfully.', tokens: { access: 'mock_access', refresh: 'mock_refresh' } };
+    }
     return this.request('/auth/change-password/', {
       method: 'POST',
       body: JSON.stringify({

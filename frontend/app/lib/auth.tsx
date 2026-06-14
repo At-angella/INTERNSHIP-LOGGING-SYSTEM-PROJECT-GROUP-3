@@ -7,7 +7,7 @@ import { User, UserRole } from './types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Always fetch the latest profile from the server to ensure we have the correct role data
     const userData = await api.getUserProfile();
     setUser(userData);
+    return userData;
   };
 
   const logout = () => {

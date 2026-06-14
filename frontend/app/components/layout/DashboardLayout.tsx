@@ -11,13 +11,16 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!loading && isAuthenticated && user?.must_change_password) {
+      router.push('/change-password');
+    }
+  }, [loading, isAuthenticated, user, router]);
 
   if (!mounted || loading) {
     return (

@@ -5,6 +5,7 @@ export interface MockUser {
   last_name: string;
   role: 'STUDENT' | 'ACADEMIC_SUPERVISOR' | 'WORKPLACE_SUPERVISOR' | 'ADMIN';
   password: string; // Only for testing
+  must_change_password?: boolean;
 }
 
 // Test users database
@@ -23,7 +24,8 @@ export const mockUsers: MockUser[] = [
     password: 'supervisor123',
     first_name: 'Mathias',
     last_name: 'Supervisor',
-    role: 'ACADEMIC_SUPERVISOR'
+    role: 'ACADEMIC_SUPERVISOR',
+    must_change_password: true
   },
   {
     id: 3,
@@ -31,7 +33,8 @@ export const mockUsers: MockUser[] = [
     password: 'workplace123',
     first_name: 'Sliver',
     last_name: 'Mentor',
-    role: 'WORKPLACE_SUPERVISOR'
+    role: 'WORKPLACE_SUPERVISOR',
+    must_change_password: true
   },
   {
     id: 4,
