@@ -348,7 +348,7 @@ class InternshipPlacementViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated, MustChangePassword]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['status', 'department', 'workplace']
+    filterset_fields = ['status', 'academic_department', 'workplace']
     ordering_fields = ['start_date', 'created_at']
     ordering = ['-start_date']
 
