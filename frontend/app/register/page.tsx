@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button, Input, Card } from '@/components/ui';
+import { api } from '@/lib/api';
+import { toast } from 'react-toastify';
 import { 
   User, Mail, Hash, BookOpen, 
   Phone, Building, ArrowRight, Lock
@@ -71,11 +73,40 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the backend API to register the student
+      await api.registerStudent({
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phoneNumber,
+        student_number: formData.studentNumber,
+        registration_number: formData.registrationNumber,
+        college: formData.college,
+        program: formData.program,
+        role: formData.role,
+      });
+      toast.success('✓ Registration successful! Redirecting to login...', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setSuccessMessage('Registration successful! Redirecting to login...');
       setTimeout(() => router.push('/login'), 2000);
-    } catch (error) {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+    } catch (error: any) {
+      const errorMsg = error.message || 'Registration failed. Please try again.';
+      toast.error('✗ ' + errorMsg, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setErrors({ submit: errorMsg });
     } finally {
       setIsSubmitting(false);
     }

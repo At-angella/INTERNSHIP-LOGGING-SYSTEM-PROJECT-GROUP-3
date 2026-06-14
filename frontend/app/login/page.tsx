@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth';
 import { mockUsers } from '@/lib/mockAuth';
 import { Button, Input, Card } from '@/components/ui';
+import { toast } from 'react-toastify';
 import { Mail, Lock, ArrowRight, ShieldCheck, GraduationCap, Briefcase, Settings } from 'lucide-react';
 
 export default function LoginPage() {
@@ -30,9 +31,26 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      toast.success('✓ Login successful! Welcome back!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const errorMsg = err.message || 'Login failed. Please check your credentials.';
+      toast.error('✗ ' + errorMsg, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -43,9 +61,26 @@ export default function LoginPage() {
     setError('');
     try {
       await login(mockUser.email, mockUser.password);
+      toast.success('✓ Login successful! Welcome back!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed.');
+      const errorMsg = err.message || 'Login failed.';
+      toast.error('✗ ' + errorMsg, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -97,12 +132,9 @@ export default function LoginPage() {
                 icon={<Lock className="w-5 h-5" />}
               />
               <div className="flex justify-end">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
-                >
-                  Forgot password?
-                </Link>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Contact administrator to reset password
+                </span>
               </div>
             </div>
 
