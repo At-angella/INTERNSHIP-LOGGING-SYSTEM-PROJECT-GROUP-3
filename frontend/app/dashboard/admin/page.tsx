@@ -33,17 +33,34 @@ export default function AdminDashboard() {
   const [recentPlacements, setRecentPlacements] = useState<InternshipPlacement[]>([]);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [newSupervisor, setNewSupervisor] = useState({
+  const [newSupervisor, setNewSupervisor] = useState<{
+    email: string;
+    first_name: string;
+    last_name: string;
+    role: 'ACADEMIC_SUPERVISOR' | 'WORKPLACE_SUPERVISOR';
+    phone_number: string;
+    staff_id: string;
+    faculty: string;
+    department: string;
+    specialization: string;
+    max_students: number;
+    job_title: string;
+    workplace_department: string;
+    years_of_experience: number;
+  }>({
     email: '',
     first_name: '',
     last_name: '',
-    role: 'ACADEMIC_SUPERVISOR' as const,
+    role: 'ACADEMIC_SUPERVISOR',
     phone_number: '',
     staff_id: '',
     faculty: '',
     department: '',
     specialization: '',
     max_students: 10,
+    job_title: '',
+    workplace_department: '',
+    years_of_experience: 0,
   });
 
   useEffect(() => {
@@ -81,7 +98,34 @@ export default function AdminDashboard() {
   const handleRegisterSupervisor = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.registerSupervisor(newSupervisor);
+      // Build the payload based on role
+      let payload: any = {
+        email: newSupervisor.email,
+        first_name: newSupervisor.first_name,
+        last_name: newSupervisor.last_name,
+        phone_number: newSupervisor.phone_number,
+        role: newSupervisor.role,
+      };
+
+      if (newSupervisor.role === 'ACADEMIC_SUPERVISOR') {
+        payload = {
+          ...payload,
+          staff_id: newSupervisor.staff_id,
+          faculty: newSupervisor.faculty,
+          department: newSupervisor.department,
+          specialization: newSupervisor.specialization,
+          max_students: newSupervisor.max_students,
+        };
+      } else if (newSupervisor.role === 'WORKPLACE_SUPERVISOR') {
+        payload = {
+          ...payload,
+          job_title: newSupervisor.job_title,
+          workplace_department: newSupervisor.workplace_department,
+          years_of_experience: newSupervisor.years_of_experience,
+        };
+      }
+
+      await api.registerSupervisor(payload);
       setShowRegisterModal(false);
       setNewSupervisor({
         email: '',
@@ -94,10 +138,14 @@ export default function AdminDashboard() {
         department: '',
         specialization: '',
         max_students: 10,
+        job_title: '',
+        workplace_department: '',
+        years_of_experience: 0,
       });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to register supervisor:', error);
+      alert('Error: ' + (error.message || 'Failed to register supervisor'));
     }
   };
 
@@ -225,28 +273,135 @@ export default function AdminDashboard() {
       {/* Register Modal (Simplified for refactor) */}
       {showRegisterModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <Card className="w-full max-w-lg p-8 animate-in zoom-in-95 duration-300" variant="panel">
+          <Card className="w-full max-w-2xl p-8 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" variant="panel">
             <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">Register Supervisor</h2>
-            <form onSubmit={handleRegisterSupervisor} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="First Name" value={newSupervisor.first_name} onChange={e => setNewSupervisor({...newSupervisor, first_name: e.target.value})} required />
-                <Input label="Last Name" value={newSupervisor.last_name} onChange={e => setNewSupervisor({...newSupervisor, last_name: e.target.value})} required />
+            <form onSubmit={handleRegisterSupervisor} className="space-y-6">
+              {/* Basic Info */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <Input 
+                    label="First Name" 
+                    value={newSupervisor.first_name} 
+                    onChange={e => setNewSupervisor({...newSupervisor, first_name: e.target.value})} 
+                    required 
+                  />
+                  <Input 
+                    label="Last Name" 
+                    value={newSupervisor.last_name} 
+                    onChange={e => setNewSupervisor({...newSupervisor, last_name: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <Input 
+                  label="Email" 
+                  type="email" 
+                  value={newSupervisor.email} 
+                  onChange={e => setNewSupervisor({...newSupervisor, email: e.target.value})} 
+                  required 
+                />
+                <div className="mt-4">
+                  <Input 
+                    label="Phone Number" 
+                    type="tel" 
+                    value={newSupervisor.phone_number} 
+                    onChange={e => setNewSupervisor({...newSupervisor, phone_number: e.target.value})} 
+                    required 
+                  />
+                </div>
               </div>
-              <Input label="Email" type="email" value={newSupervisor.email} onChange={e => setNewSupervisor({...newSupervisor, email: e.target.value})} required />
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">Supervisor Role</label>
+
+              {/* Role Selection */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Supervisor Role</h3>
                 <select 
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 py-3 px-4 outline-none focus:ring-2 focus:ring-indigo-500"
                   value={newSupervisor.role}
                   onChange={e => setNewSupervisor({...newSupervisor, role: e.target.value as any})}
+                  required
                 >
                   <option value="ACADEMIC_SUPERVISOR">Academic Supervisor</option>
                   <option value="WORKPLACE_SUPERVISOR">Workplace Supervisor</option>
                 </select>
               </div>
+
+              {/* Academic Supervisor Fields */}
+              {newSupervisor.role === 'ACADEMIC_SUPERVISOR' && (
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Academic Information</h3>
+                  <div className="space-y-4">
+                    <Input 
+                      label="Staff ID" 
+                      value={newSupervisor.staff_id} 
+                      onChange={e => setNewSupervisor({...newSupervisor, staff_id: e.target.value})} 
+                      placeholder="e.g., STF/2024/001"
+                      required 
+                    />
+                    <Input 
+                      label="Faculty" 
+                      value={newSupervisor.faculty} 
+                      onChange={e => setNewSupervisor({...newSupervisor, faculty: e.target.value})} 
+                      placeholder="e.g., CoCIS"
+                      required 
+                    />
+                    <Input 
+                      label="Department" 
+                      value={newSupervisor.department} 
+                      onChange={e => setNewSupervisor({...newSupervisor, department: e.target.value})} 
+                      placeholder="e.g., Computer Science"
+                      required 
+                    />
+                    <Input 
+                      label="Specialization" 
+                      value={newSupervisor.specialization} 
+                      onChange={e => setNewSupervisor({...newSupervisor, specialization: e.target.value})} 
+                      placeholder="e.g., Software Engineering"
+                      required 
+                    />
+                    <Input 
+                      label="Max Students" 
+                      type="number"
+                      value={newSupervisor.max_students} 
+                      onChange={e => setNewSupervisor({...newSupervisor, max_students: parseInt(e.target.value)})} 
+                      required 
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Workplace Supervisor Fields */}
+              {newSupervisor.role === 'WORKPLACE_SUPERVISOR' && (
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Workplace Information</h3>
+                  <div className="space-y-4">
+                    <Input 
+                      label="Job Title" 
+                      value={newSupervisor.job_title} 
+                      onChange={e => setNewSupervisor({...newSupervisor, job_title: e.target.value})} 
+                      placeholder="e.g., Senior Software Engineer"
+                      required 
+                    />
+                    <Input 
+                      label="Department" 
+                      value={newSupervisor.workplace_department} 
+                      onChange={e => setNewSupervisor({...newSupervisor, workplace_department: e.target.value})} 
+                      placeholder="e.g., IT, Finance, HR"
+                      required 
+                    />
+                    <Input 
+                      label="Years of Experience" 
+                      type="number"
+                      value={newSupervisor.years_of_experience} 
+                      onChange={e => setNewSupervisor({...newSupervisor, years_of_experience: parseInt(e.target.value)})} 
+                      required 
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-4 pt-6">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setShowRegisterModal(false)}>Cancel</Button>
-                <Button type="submit" className="flex-1">Register</Button>
+                <Button type="submit" className="flex-1">Register Supervisor</Button>
               </div>
             </form>
           </Card>
