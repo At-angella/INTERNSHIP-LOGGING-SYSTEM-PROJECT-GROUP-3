@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from core.models import (
     CustomUser, AcademicDepartment, Workplace, InternshipPlacement,
     WeeklyLog, SupervisorReview, EvaluationCriteria, Evaluation, AuditLog
@@ -420,6 +421,7 @@ class PlacementStatusUpdateSerializer(serializers.ModelSerializer):
         instance.status = validated_data['status']
         if validated_data['status'] == 'APPROVED':
             instance.approved_by = request.user
+            instance.approved_at = timezone.now()
         instance.save()
         return instance
 

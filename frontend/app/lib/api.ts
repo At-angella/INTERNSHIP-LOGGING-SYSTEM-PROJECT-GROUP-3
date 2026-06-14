@@ -228,6 +228,20 @@ class ApiClient {
     });
   }
 
+  approvePlacement(id: number) {
+    return this.request(`/placements/${id}/update_status/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'APPROVED' }),
+    });
+  }
+
+  rejectPlacement(id: number) {
+    return this.request(`/placements/${id}/update_status/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'REJECTED' }),
+    });
+  }
+
   // Weekly Logs
   async getWeeklyLogs(params?: any) {
     if (USE_MOCK_DATA) return mockApiData.getWeeklyLogs();
