@@ -23,10 +23,10 @@ import {
 
 interface FormState {
   student_id: string;
-  workplace_id: string;
+  workplace_name: string;
   academic_supervisor_id: string;
   workplace_supervisor_id: string;
-  department_id: string;
+  department_name: string;
   position_title: string;
   description: string;
   start_date: string;
@@ -35,10 +35,10 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   student_id: '',
-  workplace_id: '',
+  workplace_name: '',
   academic_supervisor_id: '',
   workplace_supervisor_id: '',
-  department_id: '',
+  department_name: '',
   position_title: '',
   description: '',
   start_date: '',
@@ -128,8 +128,8 @@ export default function PlacementsAdminPage() {
 
     // validation
     const required: (keyof FormState)[] = [
-      'student_id', 'workplace_id', 'academic_supervisor_id',
-      'workplace_supervisor_id', 'department_id',
+      'student_id', 'workplace_name', 'academic_supervisor_id',
+      'workplace_supervisor_id', 'department_name',
       'position_title', 'start_date', 'end_date',
     ];
     for (const key of required) {
@@ -145,12 +145,46 @@ export default function PlacementsAdminPage() {
 
     setSubmitting(true);
     try {
+      // 1. Resolve Workplace ID
+      let workplaceId: number;
+      const matchedWp = workplaces.find(
+        w => w.name.toLowerCase() === form.workplace_name.trim().toLowerCase()
+      );
+      if (matchedWp) {
+        workplaceId = matchedWp.id;
+      } else {
+        const newWp = await api.createWorkplace({
+          name: form.workplace_name.trim(),
+          location: 'Kampala, Uganda',
+          industry: 'Information Technology',
+          contact_email: 'contact@workplace.com',
+          contact_phone: '0700000000',
+        });
+        workplaceId = newWp.id;
+      }
+
+      // 2. Resolve Department ID
+      let departmentId: number;
+      const matchedDept = departments.find(
+        d => d.name.toLowerCase() === form.department_name.trim().toLowerCase()
+      );
+      if (matchedDept) {
+        departmentId = matchedDept.id;
+      } else {
+        const newDept = await api.createDepartment({
+          name: form.department_name.trim(),
+          faculty: 'CoCIS',
+        });
+        departmentId = newDept.id;
+      }
+
+      // 3. Create Placement
       await api.createPlacement({
         student: Number(form.student_id),
-        workplace: Number(form.workplace_id),
+        workplace: Number(workplaceId),
         academic_supervisor: Number(form.academic_supervisor_id),
         workplace_supervisor: Number(form.workplace_supervisor_id),
-        department: Number(form.department_id),
+        department: Number(departmentId),
         position_title: form.position_title,
         description: form.description,
         start_date: form.start_date,
@@ -159,7 +193,7 @@ export default function PlacementsAdminPage() {
       toast.success('✓ Placement created successfully!', { position: 'top-right', autoClose: 3000 });
       setModalOpen(false);
       setLoading(true);
-      await fetchPlacements();
+      await Promise.all([fetchPlacements(), fetchDropdownData()]);
     } catch (err: any) {
       const msg = err?.message || 'Failed to create placement. Please try again.';
       setFormError(msg);
@@ -347,27 +381,33 @@ export default function PlacementsAdminPage() {
               {/* Section: Placement Details */}
               <SectionLabel label="Placement Details" />
 
-              <FormSelect
+              <FormInput
                 label="Workplace *"
-                value={form.workplace_id}
-                onChange={v => setField('workplace_id', v)}
-                placeholder="Select workplace"
-              >
+                type="text"
+                placeholder="Type or select workplace"
+                value={form.workplace_name}
+                onChange={v => setField('workplace_name', v)}
+                list="workplace-options"
+              />
+              <datalist id="workplace-options">
                 {workplaces.map(w => (
-                  <option key={w.id} value={w.id}>{w.name}</option>
+                  <option key={w.id} value={w.name} />
                 ))}
-              </FormSelect>
+              </datalist>
 
-              <FormSelect
+              <FormInput
                 label="Department *"
-                value={form.department_id}
-                onChange={v => setField('department_id', v)}
-                placeholder="Select department"
-              >
+                type="text"
+                placeholder="Type or select department"
+                value={form.department_name}
+                onChange={v => setField('department_name', v)}
+                list="department-options"
+              />
+              <datalist id="department-options">
                 {departments.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
+                  <option key={d.id} value={d.name} />
                 ))}
-              </FormSelect>
+              </datalist>
 
               <FormInput
                 label="Position / Role Title *"
@@ -496,9 +536,9 @@ function FormSelect({
 }
 
 function FormInput({
-  label, type, placeholder, value, onChange,
+  label, type, placeholder, value, onChange, list,
 }: {
-  label: string; type: string; placeholder?: string; value: string; onChange: (v: string) => void;
+  label: string; type: string; placeholder?: string; value: string; onChange: (v: string) => void; list?: string;
 }) {
   return (
     <div>
@@ -508,6 +548,7 @@ function FormInput({
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
+        list={list}
         className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-all"
       />
     </div>

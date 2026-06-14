@@ -312,9 +312,25 @@ class ApiClient {
     return this.request('/departments/');
   }
 
+  async createDepartment(data: any) {
+    if (USE_MOCK_DATA) return mockApiData.createDepartment(data);
+    return this.request('/departments/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getWorkplaces() {
     if (USE_MOCK_DATA) return mockApiData.getWorkplaces();
     return this.request('/workplaces/');
+  }
+
+  async createWorkplace(data: any) {
+    if (USE_MOCK_DATA) return mockApiData.createWorkplace(data);
+    return this.request('/workplaces/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   async getAuditLogs() {

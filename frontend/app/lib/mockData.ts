@@ -404,6 +404,37 @@ export const mockApiData = {
     return mockWorkplaces;
   },
 
+  async createDepartment(data: any) {
+    await delay();
+    const newDept = {
+      id: Date.now(),
+      name: data.name,
+      faculty: data.faculty || 'CoCIS',
+      description: data.description || '',
+      head: null,
+      placement_count: 0
+    };
+    mockDepartments.push(newDept);
+    return newDept;
+  },
+
+  async createWorkplace(data: any) {
+    await delay();
+    const newWp = {
+      id: Date.now(),
+      name: data.name,
+      industry: data.industry || 'Information Technology',
+      address: data.address || data.location || 'Kampala, Uganda',
+      contact_person: data.contact_person || 'Coordinator',
+      contact_email: data.contact_email || 'contact@workplace.com',
+      contact_phone: data.contact_phone || '0700000000',
+      is_active: true,
+      active_placements_count: 0
+    };
+    mockWorkplaces.push(newWp);
+    return newWp;
+  },
+
   async getEvaluations() {
     await delay();
     return {
