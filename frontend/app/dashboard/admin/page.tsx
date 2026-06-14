@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   });
   const [recentPlacements, setRecentPlacements] = useState<InternshipPlacement[]>([]);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [createdSupervisor, setCreatedSupervisor] = useState<{ name: string; email: string; temp_password: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [newSupervisor, setNewSupervisor] = useState<{
     email: string;
@@ -70,12 +71,14 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [users, placements, departments] = await Promise.all([
+      const [usersResponse, placements, departments] = await Promise.all([
         api.getUsers(),
         api.getPlacements(),
         api.getDepartments()
       ]);
       
+      // Backend returns paginated { count, results: [] } — unwrap it
+      const users: User[] = Array.isArray(usersResponse) ? usersResponse : (usersResponse.results ?? []);
       const students = users.filter((u: User) => u.role === 'STUDENT');
       const supervisors = users.filter((u: User) => u.role === 'ACADEMIC_SUPERVISOR' || u.role === 'WORKPLACE_SUPERVISOR');
       
@@ -125,8 +128,13 @@ export default function AdminDashboard() {
         };
       }
 
-      await api.registerSupervisor(payload);
-      setShowRegisterModal(false);
+      const result = await api.registerSupervisor(payload);
+      // Show the one-time temp password to the admin
+      setCreatedSupervisor({
+        name: `${newSupervisor.first_name} ${newSupervisor.last_name}`,
+        email: newSupervisor.email,
+        temp_password: result.temp_password || '(auto-generated — check server logs)',
+      });
       setNewSupervisor({
         email: '',
         first_name: '',
@@ -270,8 +278,49 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Register Modal (Simplified for refactor) */}
-      {showRegisterModal && (
+      {/* Credentials Success Modal — shown after registration */}
+      {createdSupervisor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <Card className="w-full max-w-md p-8 animate-in zoom-in-95 duration-300" variant="panel">
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+                <ShieldCheck className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-1">Account Created!</h2>
+              <p className="text-slate-500 text-sm">Share these credentials securely. <strong className="text-rose-500">The password will NOT be shown again.</strong></p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Name</p>
+                <p className="font-bold text-slate-900 dark:text-white">{createdSupervisor.name}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Email (Login)</p>
+                <p className="font-bold text-slate-900 dark:text-white">{createdSupervisor.email}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 relative">
+                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Temporary Password</p>
+                <p className="font-black text-xl text-slate-900 dark:text-white font-mono tracking-widest">{createdSupervisor.temp_password}</p>
+                <button
+                  onClick={() => navigator.clipboard.writeText(createdSupervisor.temp_password)}
+                  className="absolute top-3 right-3 text-[10px] font-black text-amber-600 bg-amber-100 dark:bg-amber-900/40 px-2 py-1 rounded-lg hover:bg-amber-200 transition-colors uppercase tracking-widest"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 text-center">The supervisor must change this password on first login.</p>
+            </div>
+
+            <Button className="w-full" onClick={() => { setCreatedSupervisor(null); setShowRegisterModal(false); }}>
+              Done
+            </Button>
+          </Card>
+        </div>
+      )}
+
+      {/* Register Modal */}
+      {showRegisterModal && !createdSupervisor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <Card className="w-full max-w-2xl p-8 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" variant="panel">
             <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">Register Supervisor</h2>
@@ -294,7 +343,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <Input 
-                  label="Email" 
+                  label="Email (@mak.ac.ug)" 
                   type="email" 
                   value={newSupervisor.email} 
                   onChange={e => setNewSupervisor({...newSupervisor, email: e.target.value})} 

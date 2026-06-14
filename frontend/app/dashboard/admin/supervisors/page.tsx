@@ -41,7 +41,9 @@ export default function SupervisorsPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const users = await api.getUsers();
+        const response = await api.getUsers();
+        // Backend returns paginated { count, results: [] } — unwrap it
+        const users: User[] = Array.isArray(response) ? response : (response.results ?? []);
         const supervisorList = users.filter((u: User) => 
           u.role === 'ACADEMIC_SUPERVISOR' || u.role === 'WORKPLACE_SUPERVISOR'
         );
