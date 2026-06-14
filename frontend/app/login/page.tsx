@@ -140,9 +140,12 @@ export default function LoginPage() {
                 icon={<Lock className="w-5 h-5" />}
               />
               <div className="flex justify-end">
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Contact administrator to reset password
-                </span>
+                <Link
+                  href="/change-password"
+                  className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+                >
+                  Change temporary password
+                </Link>
               </div>
             </div>
 
