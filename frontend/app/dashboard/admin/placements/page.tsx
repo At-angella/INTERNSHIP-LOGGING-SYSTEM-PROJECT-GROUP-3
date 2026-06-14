@@ -26,7 +26,7 @@ interface FormState {
   workplace_name: string;
   academic_supervisor_id: string;
   workplace_supervisor_id: string;
-  department_name: string;
+  department_id: string;
   position_title: string;
   description: string;
   start_date: string;
@@ -38,7 +38,7 @@ const EMPTY_FORM: FormState = {
   workplace_name: '',
   academic_supervisor_id: '',
   workplace_supervisor_id: '',
-  department_name: '',
+  department_id: '',
   position_title: '',
   description: '',
   start_date: '',
@@ -129,7 +129,7 @@ export default function PlacementsAdminPage() {
     // validation
     const required: (keyof FormState)[] = [
       'student_id', 'workplace_name', 'academic_supervisor_id',
-      'workplace_supervisor_id', 'department_name',
+      'workplace_supervisor_id', 'department_id',
       'position_title', 'start_date', 'end_date',
     ];
     for (const key of required) {
@@ -145,13 +145,12 @@ export default function PlacementsAdminPage() {
 
     setSubmitting(true);
     try {
-      // Create Placement directly using workplace_name and department_name
       await api.createPlacement({
         student: Number(form.student_id),
         workplace_name: form.workplace_name.trim(),
         academic_supervisor: Number(form.academic_supervisor_id),
         workplace_supervisor: Number(form.workplace_supervisor_id),
-        department_name: form.department_name.trim(),
+        department: Number(form.department_id),
         position_title: form.position_title,
         description: form.description,
         start_date: form.start_date,
@@ -362,19 +361,16 @@ export default function PlacementsAdminPage() {
                 ))}
               </datalist>
 
-              <FormInput
+              <FormSelect
                 label="Department *"
-                type="text"
-                placeholder="Type or select department"
-                value={form.department_name}
-                onChange={v => setField('department_name', v)}
-                list="department-options"
-              />
-              <datalist id="department-options">
+                value={form.department_id}
+                onChange={v => setField('department_id', v)}
+                placeholder="Select department"
+              >
                 {departments.map(d => (
-                  <option key={d.id} value={d.name} />
+                  <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
-              </datalist>
+              </FormSelect>
 
               <FormInput
                 label="Position / Role Title *"
