@@ -71,26 +71,30 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersResponse, placements, departments] = await Promise.all([
-        api.getUsers(),
+      const [studentsResponse, academicResponse, workplaceResponse, placementsResponse, departmentsResponse] = await Promise.all([
+        api.getUsers({ role: 'STUDENT' }),
+        api.getUsers({ role: 'ACADEMIC_SUPERVISOR' }),
+        api.getUsers({ role: 'WORKPLACE_SUPERVISOR' }),
         api.getPlacements(),
         api.getDepartments()
       ]);
       
-      // Backend returns paginated { count, results: [] } — unwrap it
-      const users: User[] = Array.isArray(usersResponse) ? usersResponse : (usersResponse.results ?? []);
-      const students = users.filter((u: User) => u.role === 'STUDENT');
-      const supervisors = users.filter((u: User) => u.role === 'ACADEMIC_SUPERVISOR' || u.role === 'WORKPLACE_SUPERVISOR');
+      const totalStudents = studentsResponse.count !== undefined ? studentsResponse.count : (studentsResponse.length || 0);
+      const totalAcademic = academicResponse.count !== undefined ? academicResponse.count : (academicResponse.length || 0);
+      const totalWorkplace = workplaceResponse.count !== undefined ? workplaceResponse.count : (workplaceResponse.length || 0);
+      
+      const totalPlacements = placementsResponse.count !== undefined ? placementsResponse.count : (placementsResponse.length || 0);
+      const totalDepartments = departmentsResponse.count !== undefined ? departmentsResponse.count : (departmentsResponse.length || 0);
       
       setStats({
-        students: students.length,
-        supervisors: supervisors.length,
-        placements: placements.count || placements.length || 0,
-        departments: departments.length,
+        students: totalStudents,
+        supervisors: totalAcademic + totalWorkplace,
+        placements: totalPlacements,
+        departments: totalDepartments,
       });
       
-      const placementsList = placements.results || placements;
-      setRecentPlacements(placementsList.slice(0, 5));
+      const placementsList = placementsResponse.results || placementsResponse || [];
+      setRecentPlacements(Array.isArray(placementsList) ? placementsList.slice(0, 5) : []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
