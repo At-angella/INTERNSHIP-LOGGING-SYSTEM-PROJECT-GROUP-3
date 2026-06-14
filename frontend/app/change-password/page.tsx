@@ -21,10 +21,8 @@ export default function ChangePasswordPage() {
 
   useEffect(() => {
     if (authLoading || passwordChanged) return;
-
-    if (!user) {
-      router.push('/login');
-    } else if (!user.must_change_password) {
+    // Only redirect if already fully logged in with no need to change password
+    if (user && !user.must_change_password) {
       router.push('/dashboard');
     }
   }, [user, authLoading, passwordChanged, router]);
@@ -68,7 +66,8 @@ export default function ChangePasswordPage() {
     }
   };
 
-  if (authLoading || (!passwordChanged && (!user || !user.must_change_password))) {
+  // Only spin while auth is resolving, or briefly while redirecting an already-authorised user to dashboard
+  if (authLoading || (!passwordChanged && user && !user.must_change_password)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
