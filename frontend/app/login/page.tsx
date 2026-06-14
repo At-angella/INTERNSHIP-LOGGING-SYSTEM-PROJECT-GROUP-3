@@ -174,7 +174,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </form>
-<<<<<<< HEAD
 
           {/* Users Section */}
           <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
@@ -206,8 +205,6 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
-=======
->>>>>>> beb8cdf736d13a9676fdf91662906495bae1ca92
         </Card>
       </div>
     </div>
