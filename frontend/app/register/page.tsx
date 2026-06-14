@@ -123,7 +123,7 @@ const Register = () => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="John"
+                  placeholder="firstname"
                   error={errors.firstName}
                   icon={<User className="w-5 h-5" />}
                 />
@@ -132,7 +132,7 @@ const Register = () => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  placeholder="Doe"
+                  placeholder="lastname"
                   error={errors.lastName}
                   icon={<User className="w-5 h-5" />}
                 />
@@ -144,7 +144,7 @@ const Register = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="john.doe@students.mak.ac.ug"
+                placeholder="firstname.lastname@students.mak.ac.ug"
                 error={errors.email}
                 icon={<Mail className="w-5 h-5" />}
               />

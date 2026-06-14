@@ -300,7 +300,7 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     workplace = WorkplaceSerializer(read_only=True)
     academic_supervisor = AcademicSupervisorSerializer(read_only=True)
     workplace_supervisor = WorkplaceSupervisorSerializer(read_only=True)
-    department = AcademicDepartmentSerializer(read_only=True)
+    department = AcademicDepartmentSerializer(source='academic_department', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     log_progress = serializers.SerializerMethodField()
 
@@ -329,6 +329,37 @@ class InternshipPlacementCreateSerializer(serializers.ModelSerializer):
     """
     Used for creating and updating placements.
     """
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=AcademicDepartment.objects.all(),
+        source='academic_department'
+    )
+
+    def to_internal_value(self, data):
+        # Resolve workplace_name to workplace ID
+        workplace_name = data.get('workplace_name')
+        if workplace_name:
+            workplace, _ = Workplace.objects.get_or_create(
+                name=workplace_name.strip(),
+                defaults={
+                    'location': 'Kampala, Uganda',
+                    'industry': 'Information Technology',
+                    'contact_email': 'contact@workplace.com',
+                    'contact_phone': '0700000000',
+                }
+            )
+            data['workplace'] = workplace.id
+
+        # Resolve department_name to academic_department ID
+        department_name = data.get('department_name')
+        if department_name:
+            department, _ = AcademicDepartment.objects.get_or_create(
+                name=department_name.strip(),
+                defaults={'faculty': 'CoCIS'}
+            )
+            data['department'] = department.id
+
+        return super().to_internal_value(data)
+
     class Meta:
         model = InternshipPlacement
         fields = (
