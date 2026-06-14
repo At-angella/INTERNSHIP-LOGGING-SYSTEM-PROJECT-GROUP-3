@@ -82,7 +82,7 @@ const Register = () => {
       await api.registerStudent({
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        confirm_password: formData.confirmPassword,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone_number: formData.phoneNumber,
