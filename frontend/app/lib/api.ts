@@ -12,7 +12,12 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('access_token');
       this.refreshToken = localStorage.getItem('refresh_token');
+      console.log(`[API Client] Initialized. Base URL: ${API_BASE_URL}. Mock Mode: ${USE_MOCK_DATA}`);
     }
+  }
+
+  isMockMode() {
+    return USE_MOCK_DATA;
   }
 
   setTokens(access: string, refresh?: string) {
