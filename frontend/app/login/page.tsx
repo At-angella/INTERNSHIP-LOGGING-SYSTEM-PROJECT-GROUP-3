@@ -17,10 +17,14 @@ export default function LoginPage() {
   const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in
+  // Redirect if already logged in, respecting the must_change_password flag
   useEffect(() => {
-    if (user && !authLoading) {
-      router.push('/dashboard');
+    if (!authLoading && user) {
+      if (user.must_change_password) {
+        router.push('/change-password');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, authLoading, router]);
 
@@ -174,37 +178,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </form>
-
-          {/* Users Section */}
-          <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-6 text-center uppercase tracking-widest">
-              Access Accounts
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {mockUsers.map(u => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(u)}
-                  disabled={loading}
-                  className="flex flex-col items-center p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/30 dark:bg-slate-900/30 hover:border-primary/50 hover:bg-primary/5 transition-all group disabled:opacity-50"
-                >
-                  <span className="text-lg mb-1 group-hover:scale-125 transition-transform duration-300">
-                    {u.role === 'STUDENT' ? <GraduationCap className="w-5 h-5 text-primary" /> :
-                      u.role === 'ACADEMIC_SUPERVISOR' ? <GraduationCap className="w-5 h-5 text-secondary" /> :
-                        u.role === 'WORKPLACE_SUPERVISOR' ? <Briefcase className="w-5 h-5 text-emerald-500" /> :
-                          <Settings className="w-5 h-5 text-amber-500" />}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tighter">
-                    {u.role.split('_')[0]}
-                  </span>
-                  <span className="text-[9px] text-slate-500 dark:text-slate-500">
-                    {u.first_name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
         </Card>
       </div>
     </div>
