@@ -14,7 +14,7 @@ class CustomUserManager(BaseUserManager):
 
     ROLE_EMAIL_DOMAINS = {
         'ADMIN': '@mak.ac.ug',
-        'STUDENT': '@student.mak.ac.ug ',
+        'STUDENT': '@students.mak.ac.ug',
         'ACADEMIC_SUPERVISOR': '@mak.ac.ug',
         'WORKPLACE_SUPERVISOR': '@mak.ac.ug',
     }
@@ -114,15 +114,15 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     must_change_password = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=10)
+    phone_number = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     #Student specific fields
-    student_id = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="Student ID number e.g. 260012345")
-    registration_number = models.CharField(max_length=20, unique=True, null=False, blank=False, help_text="Registration number e.g. 25/U/12345/EVE")
-    college = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. CoCIS, CoCIT, CoHES, CoNAS, CoVET")
-    program = models.CharField(max_length=100, null=False, blank=False, help_text="E.g. BSc Computer Science")
+    student_id = models.CharField(max_length=20, unique=True, null=True, blank=True, help_text="Student ID number e.g. 260012345")
+    registration_number = models.CharField(max_length=20, unique=True, null=True, blank=True, help_text="Registration number e.g. 25/U/12345/EVE")
+    college = models.CharField(max_length=100, null=True, blank=True, help_text="E.g. CoCIS, CoCIT, CoHES, CoNAS, CoVET")
+    program = models.CharField(max_length=100, null=True, blank=True, help_text="E.g. BSc Computer Science")
 
     # Academic Supervisor fields
     staff_id = models.CharField(max_length=20, unique=True, null=True, blank=True, help_text="University staff ID e.g. STF/2024/001")
@@ -195,15 +195,13 @@ class CustomUser(AbstractUser):
 
         # Workplace Supervisor field enforcement
         if self.role == 'WORKPLACE_SUPERVISOR':
-            required_workplace_fields = {
-                'job_title': self.job_title,
-                'workplace_department': self.workplace_department,
-                'years_of_experience': self.years_of_experience,
-            }
-            missing = [
-                field for field, value in required_workplace_fields.items()
-                if not value
-            ]
+            missing = []
+            if not self.job_title:
+                missing.append('job_title')
+            if not self.workplace_department:
+                missing.append('workplace_department')
+            if self.years_of_experience is None:  # 0 is a valid value
+                missing.append('years_of_experience')
             if missing:
                 raise ValidationError({
                     field: "This field is required for workplace supervisors."
@@ -224,6 +222,7 @@ class CustomUser(AbstractUser):
         forbidden_fields = role_field_map.get(self.role, [])
         for field in forbidden_fields:
             value = getattr(self, field, None)
+            # None and empty string are OK (field not set); 0 is OK for numeric defaults
             if value is not None and value != '' and value != 0:
                 raise ValidationError({
                     field: f"This field is not applicable to '{self.get_role_display()}'."

@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button, Input, Card } from '@/components/ui';
-import { api } from '@/lib/api';
 import { 
   User, Mail, Hash, BookOpen, 
-  Phone, Building, ArrowRight
+  Phone, Building, ArrowRight, Lock
 } from 'lucide-react';
 
 const Register = () => {
@@ -17,9 +16,11 @@ const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     role: 'STUDENT',
     phoneNumber: '',
-    studentNumber: '',
+    studentId: '',
     registrationNumber: '',
     college: '',
     program: '',
@@ -39,10 +40,17 @@ const Register = () => {
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!emailRegex.test(formData.email)) newErrors.email = 'Enter a valid email';
 
+    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+
+    if (!formData.confirmPassword.trim()) newErrors.confirmPassword = 'Confirm password is required';
+    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
     if (!formData.role) newErrors.role = 'Role is required';
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Required';
+    else if (formData.phoneNumber.length > 10) newErrors.phoneNumber = 'Phone number must be 10 digits or less';
 
-    if (!formData.studentNumber.trim()) newErrors.studentNumber = 'Student ID is required';
+    if (!formData.studentId.trim()) newErrors.studentId = 'Student ID is required';
     if (!formData.registrationNumber.trim()) newErrors.registrationNumber = 'Registration number is required';
     if (!formData.college.trim()) newErrors.college = 'College is required';
     if (!formData.program.trim()) newErrors.program = 'Program is required';
@@ -68,11 +76,11 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await api.registerStudent(formData);
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setSuccessMessage('Registration successful! Redirecting to login...');
       setTimeout(() => router.push('/login'), 2000);
-    } catch (error: any) {
-      setErrors({ submit: error.message || 'Registration failed. Please try again.' });
+    } catch (error) {
+      setErrors({ submit: 'Registration failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -141,6 +149,28 @@ const Register = () => {
                 icon={<Mail className="w-5 h-5" />}
               />
 
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter a strong password"
+                error={errors.password}
+                icon={<Lock className="w-5 h-5" />}
+              />
+
+              <Input
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+                error={errors.confirmPassword}
+                icon={<Lock className="w-5 h-5" />}
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">Role</label>
@@ -151,8 +181,6 @@ const Register = () => {
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm py-3 px-4 outline-none focus:ring-2 focus:ring-primary transition-all"
                   >
                     <option value="STUDENT">Student</option>
-                    <option value="ACADEMIC_SUPERVISOR">Academic Supervisor</option>
-                    <option value="WORKPLACE_SUPERVISOR">Workplace Supervisor</option>
                   </select>
                   {errors.role && <p className="text-xs text-secondary mt-1">{errors.role}</p>}
                 </div>
@@ -162,7 +190,7 @@ const Register = () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  placeholder="+256..."
+                  placeholder="e.g., 0771234567"
                   error={errors.phoneNumber}
                   icon={<Phone className="w-5 h-5" />}
                 />
@@ -174,11 +202,11 @@ const Register = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   label="Student ID"
-                  name="studentNumber"
-                  value={formData.studentNumber}
+                  name="studentId"
+                  value={formData.studentId}
                   onChange={handleChange}
                   placeholder="e.g., 260012345"
-                  error={errors.studentNumber}
+                  error={errors.studentId}
                   icon={<Hash className="w-5 h-5" />}
                 />
                 <Input

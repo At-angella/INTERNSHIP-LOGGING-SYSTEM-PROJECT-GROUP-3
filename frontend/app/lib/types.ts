@@ -10,6 +10,7 @@ export interface User {
   phone_number?: string;
   is_active: boolean;
   date_joined?: string;
+  must_change_password?: boolean;
 }
 
 export interface Student extends User {

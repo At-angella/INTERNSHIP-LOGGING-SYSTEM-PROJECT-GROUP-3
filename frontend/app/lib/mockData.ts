@@ -420,7 +420,8 @@ export const mockApiData = {
 
   async registerSupervisor(data: any) {
     await delay();
-    return { id: Date.now(), ...data, role_display: data.role.replace(/_/g, ' ') };
+    const temp_password = Math.random().toString(36).slice(-8);
+    return { id: Date.now(), ...data, temp_password, role_display: data.role.replace(/_/g, ' ') };
   },
 
   async getAuditLogs() {

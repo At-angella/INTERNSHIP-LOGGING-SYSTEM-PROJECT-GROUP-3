@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth';
 import { mockUsers } from '@/lib/mockAuth';
 import { Button, Input, Card } from '@/components/ui';
+import { toast } from 'react-toastify';
 import { Mail, Lock, ArrowRight, ShieldCheck, GraduationCap, Briefcase, Settings } from 'lucide-react';
 
 export default function LoginPage() {
@@ -29,10 +30,31 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login(email, password);
-      router.push('/dashboard');
+      const loggedInUser = await login(email, password);
+      toast.success('✓ Login successful! Welcome back!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      if (loggedInUser?.must_change_password) {
+        router.push('/change-password');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const errorMsg = err.message || 'Login failed. Please check your credentials.';
+      toast.error('✗ ' + errorMsg, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -42,10 +64,31 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      await login(mockUser.email, mockUser.password);
-      router.push('/dashboard');
+      const loggedInUser = await login(mockUser.email, mockUser.password);
+      toast.success('✓ Login successful! Welcome back!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      if (loggedInUser?.must_change_password) {
+        router.push('/change-password');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
-      setError(err.message || 'Login failed.');
+      const errorMsg = err.message || 'Login failed.';
+      toast.error('✗ ' + errorMsg, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -98,10 +141,10 @@ export default function LoginPage() {
               />
               <div className="flex justify-end">
                 <Link
-                  href="/forgot-password"
+                  href="/change-password"
                   className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
                 >
-                  Forgot password?
+                  Change temporary password
                 </Link>
               </div>
             </div>
@@ -131,6 +174,7 @@ export default function LoginPage() {
               </Link>
             </p>
           </form>
+<<<<<<< HEAD
 
           {/* Users Section */}
           <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
@@ -162,6 +206,8 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
+=======
+>>>>>>> beb8cdf736d13a9676fdf91662906495bae1ca92
         </Card>
       </div>
     </div>

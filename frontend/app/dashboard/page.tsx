@@ -12,6 +12,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!loading && user) {
+      if (user.must_change_password) {
+        router.push('/change-password');
+        return;
+      }
       // Route to role-specific dashboard
       switch (user.role) {
         case 'STUDENT':
