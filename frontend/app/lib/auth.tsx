@@ -45,10 +45,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     api.setTokens(access, refresh);
     
-    // Always fetch the latest profile from the server to ensure we have the correct role data
+    // Fetch the latest profile. Then merge must_change_password from the login
+    // response in case /users/me/ doesn't return it (common in many backends).
     const userData = await api.getUserProfile();
-    setUser(userData);
-    return userData;
+    const loginUser = response.user ?? response;
+    const merged = {
+      ...userData,
+      must_change_password:
+        userData.must_change_password !== undefined
+          ? userData.must_change_password
+          : loginUser?.must_change_password ?? false,
+    };
+    setUser(merged);
+    return merged;
   };
 
   const logout = () => {
