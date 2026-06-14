@@ -294,7 +294,7 @@ class ApiClient {
 
   // Admin
   async getUsers(params?: any) {
-    if (USE_MOCK_DATA) return mockApiData.getUsers();
+    if (USE_MOCK_DATA) return mockApiData.getUsers(params);
     const query = params ? '?' + new URLSearchParams(params) : '';
     return this.request(`/users/${query}`);
   }

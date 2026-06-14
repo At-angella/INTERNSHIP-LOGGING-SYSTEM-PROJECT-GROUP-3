@@ -347,9 +347,9 @@ export const mockEvaluations: Evaluation[] = [
 const delay = () => new Promise(resolve => setTimeout(resolve, 300));
 
 export const mockApiData = {
-  async getUsers() {
+  async getUsers(params?: any) {
     await delay();
-    return mockUsers.map(u => ({
+    let users = mockUsers.map(u => ({
       id: u.id,
       email: u.email,
       first_name: u.first_name,
@@ -358,6 +358,10 @@ export const mockApiData = {
       role_display: u.role.replace(/_/g, ' '),
       is_active: true,
     }));
+    if (params?.role) {
+      users = users.filter(u => u.role === params.role);
+    }
+    return users;
   },
 
   async getPlacements(params?: any) {

@@ -29,8 +29,11 @@ export default function StudentsAdminPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const users = await api.getUsers();
-        setStudents(users.filter((u: User) => u.role === 'STUDENT') as Student[]);
+        const response = await api.getUsers();
+        const userList: User[] = Array.isArray(response)
+          ? response
+          : (response?.results ?? []);
+        setStudents(userList.filter((u: User) => u.role === 'STUDENT') as Student[]);
       } catch (error) {
         console.error('Failed to fetch students:', error);
       } finally {
@@ -50,12 +53,6 @@ export default function StudentsAdminPage() {
       <PageHeader 
         title="Student Database"
         subtitle="Manage and oversee all registered students across all faculties."
-        actions={
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Student
-          </Button>
-        }
       />
 
       <div className="space-y-8">
