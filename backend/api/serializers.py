@@ -281,7 +281,7 @@ class WorkplaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workplace
         fields = (
-            'id', 'name', 'industry', 'contact_person',
+            'id', 'name', 'industry',
             'contact_email', 'contact_phone', 'is_active',
             'active_placements_count', 'created_at', 'updated_at'
         )
