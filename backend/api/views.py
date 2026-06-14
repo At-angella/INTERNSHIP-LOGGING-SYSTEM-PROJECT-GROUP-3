@@ -364,7 +364,7 @@ class InternshipPlacementViewSet(viewsets.ModelViewSet):
         if user.role == 'ADMIN':
             return InternshipPlacement.objects.select_related(
                 'student', 'workplace', 'academic_supervisor',
-                'workplace_supervisor', 'department'
+                'workplace_supervisor', 'academic_department'
             ).all()
         elif user.role == 'STUDENT':
             return InternshipPlacement.objects.filter(student=user)

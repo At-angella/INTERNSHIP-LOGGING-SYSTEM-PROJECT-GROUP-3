@@ -445,7 +445,52 @@ export const mockApiData = {
 
   async createPlacement(data: any) {
     await delay();
-    return { id: Date.now(), ...data };
+    let workplace = null;
+    if (data.workplace_name) {
+      workplace = mockWorkplaces.find(w => w.name.toLowerCase() === data.workplace_name.toLowerCase()) || {
+        id: Date.now(),
+        name: data.workplace_name,
+        industry: 'IT',
+        address: 'Kampala',
+        contact_person: 'Contact',
+        contact_email: 'email@wp.com',
+        contact_phone: '123',
+        is_active: true,
+        active_placements_count: 0
+      };
+    }
+    let department = null;
+    if (data.department_name) {
+      department = mockDepartments.find(d => d.name.toLowerCase() === data.department_name.toLowerCase()) || {
+        id: Date.now(),
+        name: data.department_name,
+        faculty: 'CoCIS',
+        description: '',
+        head: null,
+        placement_count: 0
+      };
+    }
+    const studentObj = mockUsers.find(u => u.id === data.student);
+    const academicSupervisor = mockUsers.find(u => u.id === data.academic_supervisor);
+    const workplaceSupervisor = mockUsers.find(u => u.id === data.workplace_supervisor);
+
+    const newPlacement = {
+      id: Date.now(),
+      student: studentObj ? { ...studentObj, role_display: 'Student' } : null,
+      workplace,
+      academic_supervisor: academicSupervisor,
+      workplace_supervisor: workplaceSupervisor,
+      department,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      status: 'PENDING' as const,
+      position_title: data.position_title,
+      description: data.description,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    mockPlacements.push(newPlacement as any);
+    return newPlacement;
   },
 
   async createWeeklyLog(data: any) {

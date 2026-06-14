@@ -145,46 +145,13 @@ export default function PlacementsAdminPage() {
 
     setSubmitting(true);
     try {
-      // 1. Resolve Workplace ID
-      let workplaceId: number;
-      const matchedWp = workplaces.find(
-        w => w.name.toLowerCase() === form.workplace_name.trim().toLowerCase()
-      );
-      if (matchedWp) {
-        workplaceId = matchedWp.id;
-      } else {
-        const newWp = await api.createWorkplace({
-          name: form.workplace_name.trim(),
-          location: 'Kampala, Uganda',
-          industry: 'Information Technology',
-          contact_email: 'contact@workplace.com',
-          contact_phone: '0700000000',
-        });
-        workplaceId = newWp.id;
-      }
-
-      // 2. Resolve Department ID
-      let departmentId: number;
-      const matchedDept = departments.find(
-        d => d.name.toLowerCase() === form.department_name.trim().toLowerCase()
-      );
-      if (matchedDept) {
-        departmentId = matchedDept.id;
-      } else {
-        const newDept = await api.createDepartment({
-          name: form.department_name.trim(),
-          faculty: 'CoCIS',
-        });
-        departmentId = newDept.id;
-      }
-
-      // 3. Create Placement
+      // Create Placement directly using workplace_name and department_name
       await api.createPlacement({
         student: Number(form.student_id),
-        workplace: Number(workplaceId),
+        workplace_name: form.workplace_name.trim(),
         academic_supervisor: Number(form.academic_supervisor_id),
         workplace_supervisor: Number(form.workplace_supervisor_id),
-        department: Number(departmentId),
+        department_name: form.department_name.trim(),
         position_title: form.position_title,
         description: form.description,
         start_date: form.start_date,
