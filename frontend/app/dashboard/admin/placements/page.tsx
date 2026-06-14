@@ -74,13 +74,15 @@ export default function PlacementsAdminPage() {
 
   const fetchDropdownData = async () => {
     try {
-      const [usersRes, workplacesRes, deptsRes] = await Promise.all([
-        api.getUsers(),
+      const [studentsRes, supervisorsRes, workplacesRes, deptsRes] = await Promise.all([
+        api.getStudents(),
+        api.getSupervisors(),
         api.getWorkplaces(),
         api.getDepartments(),
       ]);
 
-      const userList: User[] = Array.isArray(usersRes) ? usersRes : (usersRes?.results ?? []);
+      const studentList: User[] = Array.isArray(studentsRes) ? studentsRes : (studentsRes?.results ?? []);
+      const supervisorList: User[] = Array.isArray(supervisorsRes) ? supervisorsRes : (supervisorsRes?.results ?? []);
       const workplaceList: Workplace[] = Array.isArray(workplacesRes)
         ? workplacesRes
         : (workplacesRes?.results ?? []);
@@ -88,9 +90,9 @@ export default function PlacementsAdminPage() {
         ? deptsRes
         : (deptsRes?.results ?? []);
 
-      setStudents(userList.filter(u => u.role === 'STUDENT'));
-      setAcademicSupervisors(userList.filter(u => u.role === 'ACADEMIC_SUPERVISOR'));
-      setWorkplaceSupervisors(userList.filter(u => u.role === 'WORKPLACE_SUPERVISOR'));
+      setStudents(studentList);
+      setAcademicSupervisors(supervisorList.filter(u => u.role === 'ACADEMIC_SUPERVISOR'));
+      setWorkplaceSupervisors(supervisorList.filter(u => u.role === 'WORKPLACE_SUPERVISOR'));
       setWorkplaces(workplaceList);
       setDepartments(deptList);
     } catch (err) {

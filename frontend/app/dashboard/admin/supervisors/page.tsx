@@ -41,12 +41,8 @@ export default function SupervisorsPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.getUsers();
-        // Backend returns paginated { count, results: [] } — unwrap it
-        const users: User[] = Array.isArray(response) ? response : (response.results ?? []);
-        const supervisorList = users.filter((u: User) => 
-          u.role === 'ACADEMIC_SUPERVISOR' || u.role === 'WORKPLACE_SUPERVISOR'
-        );
+        const response = await api.getSupervisors();
+        const supervisorList: User[] = Array.isArray(response) ? response : (response.results ?? []);
         setSupervisors(supervisorList);
       } catch (error) {
         console.error('Failed to fetch supervisors:', error);

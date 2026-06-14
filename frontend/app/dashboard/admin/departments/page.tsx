@@ -24,7 +24,8 @@ export default function DepartmentsAdminPage() {
     const fetchData = async () => {
       try {
         const data = await api.getDepartments();
-        setDepartments(data || []);
+        const deptList = Array.isArray(data) ? data : (data?.results ?? []);
+        setDepartments(deptList);
       } catch (error) {
         console.error('Failed to fetch departments:', error);
       } finally {

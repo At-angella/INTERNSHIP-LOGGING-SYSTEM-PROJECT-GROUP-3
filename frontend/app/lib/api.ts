@@ -304,6 +304,23 @@ class ApiClient {
     return this.request(`/users/${query}`);
   }
 
+  async getStudents() {
+    if (USE_MOCK_DATA) return mockUsers.filter(u => u.role === 'STUDENT');
+    return this.request('/users/students/');
+  }
+
+  async getSupervisors(params?: any) {
+    if (USE_MOCK_DATA) {
+      const role = params?.role;
+      return mockUsers.filter(u => 
+        (u.role === 'ACADEMIC_SUPERVISOR' || u.role === 'WORKPLACE_SUPERVISOR') && 
+        (!role || u.role === role)
+      );
+    }
+    const query = params ? '?' + new URLSearchParams(params) : '';
+    return this.request(`/users/supervisors/${query}`);
+  }
+
   async registerSupervisor(data: any) {
     if (USE_MOCK_DATA) return mockApiData.registerSupervisor(data);
     return this.request('/auth/register/supervisor/', {

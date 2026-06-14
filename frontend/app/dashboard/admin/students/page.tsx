@@ -29,11 +29,11 @@ export default function StudentsAdminPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.getUsers();
-        const userList: User[] = Array.isArray(response)
+        const response = await api.getStudents();
+        const userList: Student[] = Array.isArray(response)
           ? response
           : (response?.results ?? []);
-        setStudents(userList.filter((u: User) => u.role === 'STUDENT') as Student[]);
+        setStudents(userList);
       } catch (error) {
         console.error('Failed to fetch students:', error);
       } finally {
