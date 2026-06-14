@@ -262,7 +262,7 @@ class AcademicDepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicDepartment
         fields = (
-            'id', 'name', 'faculty', 'description',
+            'id', 'name', 'faculty',
             'head', 'head_id', 'placement_count',
             'created_at', 'updated_at'
         )
@@ -281,7 +281,7 @@ class WorkplaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workplace
         fields = (
-            'id', 'name', 'industry', 'address', 'contact_person',
+            'id', 'name', 'industry',
             'contact_email', 'contact_phone', 'is_active',
             'active_placements_count', 'created_at', 'updated_at'
         )

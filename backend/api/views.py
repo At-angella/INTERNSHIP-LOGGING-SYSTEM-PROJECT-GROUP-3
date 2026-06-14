@@ -329,7 +329,7 @@ class WorkplaceViewSet(viewsets.ModelViewSet):
     serializer_class = WorkplaceSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['is_active', 'industry']
-    search_fields = ['name', 'contact_person']
+    search_fields = ['name']
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
