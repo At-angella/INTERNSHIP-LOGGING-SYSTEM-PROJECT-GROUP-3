@@ -311,6 +311,13 @@ class ApiClient {
     return this.request(`/evaluations/${id}/submit/`, { method: 'POST' });
   }
 
+  updateEvaluation(id: number, data: any) {
+    return this.request(`/evaluations/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Admin
   async getUsers(params?: any) {
     if (USE_MOCK_DATA) return mockApiData.getUsers(params);

@@ -25,6 +25,8 @@ import {
   Activity,
   UserCheck
 } from 'lucide-react';
+import Link from 'next/link';
+
 export default function EvaluationsPage() {
   const { user } = useAuth();
   const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
@@ -91,29 +93,39 @@ export default function EvaluationsPage() {
     setShowEvalModal(true);
   };
 
-  const handleSubmitEvaluation = () => {
+  const handleSubmitEvaluation = async () => {
     if (selectedEval) {
-      const avgScore = (editFormData.technical_score + editFormData.soft_skills_score + editFormData.attendance_score + editFormData.conduct_score) / 4;
-      let grade = 'C';
-      if (avgScore >= 90) grade = 'A+';
-      else if (avgScore >= 80) grade = 'A';
-      else if (avgScore >= 70) grade = 'B+';
-      else if (avgScore >= 60) grade = 'B';
+      setLoading(true);
+      try {
+        const avgScore = (editFormData.technical_score + editFormData.soft_skills_score + editFormData.attendance_score + editFormData.conduct_score) / 4;
+        let grade = 'C';
+        if (avgScore >= 90) grade = 'A+';
+        else if (avgScore >= 80) grade = 'A';
+        else if (avgScore >= 70) grade = 'B+';
+        else if (avgScore >= 60) grade = 'B';
+        else if (avgScore >= 50) grade = 'C+';
 
-       const updatedEvaluations = evaluations.map(e =>
-        e.id === selectedEval.id
-          ? {
-            ...e,
-            ...editFormData,
-            total_weighted_score: avgScore,
-            final_grade: grade,
-            is_submitted: true
-          }
-          : e
-      );
-      setEvaluations(updatedEvaluations);
-      setShowEvalModal(false);
-      setSelectedEval(null);
+        // Persist update in backend
+        await api.updateEvaluation(selectedEval.id, editFormData);
+
+        const updatedEvaluations = evaluations.map(e =>
+          e.id === selectedEval.id
+            ? {
+                ...e,
+                ...editFormData,
+                total_weighted_score: avgScore,
+                final_grade: grade
+            }
+            : e
+        );
+        setEvaluations(updatedEvaluations);
+        setShowEvalModal(false);
+        setSelectedEval(null);
+      } catch (error) {
+        console.error('Failed to update evaluation:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -123,10 +135,12 @@ export default function EvaluationsPage() {
         title="Performance Evaluations"
         subtitle="Submit final assessments and monitor student performance metrics."
         actions={
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            New Assessment
-          </Button>
+          <Link href="/dashboard/academic/evaluations/new">
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              New Assessment
+            </Button>
+          </Link>
         }
       />
 
