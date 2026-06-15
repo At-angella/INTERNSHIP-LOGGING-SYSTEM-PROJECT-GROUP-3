@@ -31,27 +31,29 @@ export default function StudentsAdminPage() {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const [studentsResponse, placementsResponse] = await Promise.all([
-        api.getStudents(),
-        api.getPlacements(),
-      ]);
-
+      const studentsResponse = await api.getStudents();
       const userList: Student[] = Array.isArray(studentsResponse)
         ? studentsResponse
         : (studentsResponse?.results ?? []);
-      
+      setStudents(userList);
+    } catch (error) {
+      console.error('[Students] Failed to fetch students:', error);
+    }
+
+    try {
+      const placementsResponse = await api.getPlacements();
       const placementList: InternshipPlacement[] = Array.isArray(placementsResponse)
         ? placementsResponse
         : (placementsResponse?.results ?? []);
-
-      setStudents(userList);
+      console.log('[Students] Loaded placements:', placementList.length, placementList);
       setPlacements(placementList);
     } catch (error) {
-      console.error('Failed to fetch students & placements:', error);
-    } finally {
-      setLoading(false);
+      console.error('[Students] Failed to fetch placements:', error);
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -135,7 +137,7 @@ export default function StudentsAdminPage() {
                       if (typeof s === 'number') return s === student.id;
                       return s.id === student.id || s.email === student.email;
                     });
-                    const isPlacementActive = placement?.status === 'ACTIVE';
+                    const isPlacementActive = placement?.status === 'ACTIVE' || placement?.status === 'APPROVED';
 
                     return (
                       <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
