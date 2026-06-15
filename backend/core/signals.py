@@ -172,7 +172,7 @@ def validate_placement_state_transition(sender, instance, **kwargs):
 
     valid_transitions = {
         'PENDING':   ['APPROVED', 'REJECTED'],
-        'APPROVED':  ['ACTIVE', 'CANCELLED'],
+        'APPROVED':  ['ACTIVE', 'CANCELLED', 'COMPLETED'],
         'ACTIVE':    ['COMPLETED', 'CANCELLED'],
         'COMPLETED': [],
         'REJECTED':  [],
