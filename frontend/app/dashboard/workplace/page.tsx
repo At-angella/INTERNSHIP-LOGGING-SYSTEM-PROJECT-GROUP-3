@@ -171,7 +171,7 @@ export default function WorkplaceSupervisorDashboard() {
                       <Statusbar status={log.status} />
                     </div>
                     <p className="text-[11px] font-bold text-slate-500 mb-2 truncate">{log.placement?.student?.first_name} {log.placement?.student?.last_name}</p>
-                    <Link href={`/dashboard/workplace/reviews/${log.id}`}>
+                    <Link href={`/dashboard/workplace/evaluations/new?logId=${log.id}&placementId=${log.placement?.id}`}>
                       <Button variant="outline" size="sm" className="w-full h-8 text-[10px] font-bold uppercase tracking-widest group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
                         Review Now
                       </Button>
