@@ -56,18 +56,18 @@ export default function LogsPage() {
 
    const filteredLogs = logs.filter(log => {
     let statusMatch = true;
-    if (filterStatus === 'PENDING') statusMatch = log.status !== 'APPROVED' && log.status !== 'REJECTED';
+    if (filterStatus === 'PENDING') statusMatch = log.status !== 'APPROVED' && log.status !== 'REJECTED' && log.status !== 'REVISE';
     else if (filterStatus === 'APPROVED') statusMatch = log.status === 'APPROVED';
-    else if (filterStatus === 'REJECTED') statusMatch = log.status === 'REJECTED';
+    else if (filterStatus === 'REJECTED') statusMatch = log.status === 'REJECTED' || log.status === 'REVISE';
     
     const studentMatch = filterStudent === 'ALL' || log.placement?.id === parseInt(filterStudent);
     return statusMatch && studentMatch;
   });
 
   const stats = {
-    pending: logs.filter(l => l.status !== 'APPROVED' && l.status !== 'REJECTED').length,
+    pending: logs.filter(l => l.status !== 'APPROVED' && l.status !== 'REJECTED' && l.status !== 'REVISE').length,
     approved: logs.filter(l => l.status === 'APPROVED').length,
-    rejected: logs.filter(l => l.status === 'REJECTED').length,
+    rejected: logs.filter(l => l.status === 'REJECTED' || l.status === 'REVISE').length,
     total: logs.length,
   };
 
@@ -75,24 +75,33 @@ export default function LogsPage() {
     new Map(placements.map(p => [p.id, { id: p.id, name: `${p.student?.first_name} ${p.student?.last_name}` }])).values()
   );
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (selectedLog && reviewAction) {
-      const updatedLogs = logs.map(log =>
-        log.id === selectedLog.id
-          ? { 
-              ...log, 
-              status: (reviewAction === 'APPROVE' ? 'APPROVED' : 'REJECTED') as 'APPROVED' | 'REJECTED',
-              supervisor_review: log.supervisor_review ? {
-                ...log.supervisor_review,
-                comments: reviewComment
-              } : null
-            }
-          : log
-      );
-      setLogs(updatedLogs);
-      setSelectedLog(null);
-      setReviewAction(null);
-      setReviewComment('');
+      setLoading(true);
+      try {
+        if (reviewAction === 'APPROVE') {
+          await api.approveLog(selectedLog.id);
+        } else {
+          await api.rejectLog(selectedLog.id);
+        }
+
+        const updatedLogs = logs.map(log =>
+          log.id === selectedLog.id
+            ? { 
+                ...log, 
+                status: (reviewAction === 'APPROVE' ? 'APPROVED' : 'REVISE') as any
+              }
+            : log
+        );
+        setLogs(updatedLogs);
+        setSelectedLog(null);
+        setReviewAction(null);
+        setReviewComment('');
+      } catch (error) {
+        console.error('Failed to persist log review:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

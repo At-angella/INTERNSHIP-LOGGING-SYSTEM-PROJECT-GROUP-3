@@ -62,7 +62,10 @@ function NewEvaluationForm() {
         const data = await api.getWeeklyLogs({ placement: selectedPlacementId });
         const allLogs = data.results || data || [];
         const unreviewedSubmittedLogs = allLogs.filter(
-          (log: WeeklyLog) => log.status === 'SUBMITTED' && !log.supervisor_review
+          (log: WeeklyLog) => 
+            log.placement?.id.toString() === selectedPlacementId &&
+            log.status === 'SUBMITTED' && 
+            !log.supervisor_review
         );
         setLogs(unreviewedSubmittedLogs);
         if (unreviewedSubmittedLogs.length > 0) {
