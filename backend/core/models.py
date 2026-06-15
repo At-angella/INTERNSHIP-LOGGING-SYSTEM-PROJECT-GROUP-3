@@ -638,7 +638,7 @@ class Evaluation(models.Model):
         Calculate weighted total score based on active criteria weights.
         Formula: (Technical × 0.4) + (SoftSkills × 0.3) + (Attendance × 0.3)
         """
-        criteria = self.placement.department.evaluation_criteria.filter(is_active=True)
+        criteria = self.placement.academic_department.evaluation_criteria.filter(is_active=True)
         
         total = 0
         for criterion in criteria:

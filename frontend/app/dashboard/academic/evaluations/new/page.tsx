@@ -24,7 +24,6 @@ function NewAssessmentForm() {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<boolean>(false);
 
-  // Assessment scores (0 - 100)
   const [technicalScore, setTechnicalScore] = useState<number>(80);
   const [softSkillsScore, setSoftSkillsScore] = useState<number>(80);
   const [attendanceScore, setAttendanceScore] = useState<number>(80);
@@ -37,7 +36,6 @@ function NewAssessmentForm() {
       try {
         const data = await api.getPlacements();
         const results = data.results || data || [];
-        // Academic supervisors can evaluate placements
         setPlacements(results);
       } catch (err) {
         console.error('Failed to fetch placements:', err);
@@ -51,7 +49,7 @@ function NewAssessmentForm() {
 
   const selectedPlacement = placements.find(p => p.id.toString() === selectedPlacementId);
 
-  // Dynamic grade calculation
+  // grade calculation
   const averageScore = (technicalScore + softSkillsScore + attendanceScore + conductScore) / 4;
   
   const getGrade = (score: number) => {
@@ -80,7 +78,7 @@ function NewAssessmentForm() {
     setError('');
 
     try {
-      // 1. Create the Evaluation record
+      // Create the Evaluation record
       const evalData = {
         placement: parseInt(selectedPlacementId),
         technical_score: technicalScore,
@@ -93,7 +91,7 @@ function NewAssessmentForm() {
 
       const createdEval = await api.createEvaluation(evalData);
 
-      // 2. Submit/Lock evaluation if requested
+      // Submit/Lock evaluation
       if (submitAndLock && createdEval?.id) {
         await api.submitEvaluation(createdEval.id);
       }

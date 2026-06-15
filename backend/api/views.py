@@ -697,7 +697,7 @@ class EvaluationViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated, MustChangePassword]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['is_submitted', 'placement__department']
+    filterset_fields = ['is_submitted', 'placement__academic_department']
 
     def get_serializer_class(self):
         if self.action == 'create':
