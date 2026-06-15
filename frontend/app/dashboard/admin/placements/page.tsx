@@ -214,6 +214,24 @@ export default function PlacementsAdminPage() {
     }
   };
 
+  // ── Complete ──────────────────────────────────────────────────────────────────
+
+  const handleComplete = async () => {
+    if (!selected) return;
+    setActionLoading(true);
+    try {
+      await api.updatePlacementStatus(selected.id, 'COMPLETED');
+      toast.success('✓ Placement marked as COMPLETED!', { position: 'top-right', autoClose: 3000 });
+      setSelected(null);
+      setLoading(true);
+      await fetchPlacements();
+    } catch (err: any) {
+      toast.error('✗ ' + (err?.message || 'Failed to complete placement.'), { position: 'top-right', autoClose: 5000 });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
@@ -419,7 +437,7 @@ export default function PlacementsAdminPage() {
 
             </div>
 
-            {/* Action Footer — only shown for PENDING */}
+            {/* Action Footer — shown for PENDING or ACTIVE */}
             {selected.status === 'PENDING' && (
               <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-4">
                 <div className="flex gap-3">
@@ -440,6 +458,19 @@ export default function PlacementsAdminPage() {
                     Approve
                   </button>
                 </div>
+              </div>
+            )}
+
+            {selected.status === 'ACTIVE' && (
+              <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-4">
+                <button
+                  onClick={handleComplete}
+                  disabled={actionLoading}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                  Complete Placement
+                </button>
               </div>
             )}
           </div>
