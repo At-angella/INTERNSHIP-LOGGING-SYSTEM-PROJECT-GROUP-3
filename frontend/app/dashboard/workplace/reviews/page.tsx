@@ -7,7 +7,7 @@ import { DashboardLayout, PageHeader, Statusbar } from '@/components/layout';
 import { Card, Button } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { WeeklyLog } from '@/lib/types';
+import { Evaluation } from '@/lib/types';
 import { 
   CheckCircle, 
   XCircle, 
@@ -25,21 +25,19 @@ import {
 
 export default function ReviewsPage() {
   const { user } = useAuth();
-  const [logs, setLogs] = useState<WeeklyLog[]>([]);
+  const [logs, setLogs] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('PENDING');
-  const [selectedLog, setSelectedLog] = useState<WeeklyLog | null>(null);
-  const [reviewComment, setReviewComment] = useState('');
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewAction, setReviewAction] = useState<'APPROVE' | 'REJECT' | null>(null);
+  const [selectedLog, setSelectedLog] = useState<Evaluation | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const logsData = await api.getWeeklyLogs();
-        setLogs(logsData.results || logsData || []);
+        const data = await api.getEvaluations();
+        setLogs(data.results || data || []);
       } catch (error) {
-        console.error('Failed to fetch logs:', error);
+        console.error('Failed to fetch evaluations:', error);
       } finally {
         setLoading(false);
       }
@@ -49,45 +47,49 @@ export default function ReviewsPage() {
   }, [user]);
 
   const filteredLogs = logs.filter(log => {
-    if (filterStatus === 'PENDING') return log.status !== 'APPROVED' && log.status !== 'REJECTED';
-    if (filterStatus === 'APPROVED') return log.status === 'APPROVED';
-    if (filterStatus === 'REJECTED') return log.status === 'REJECTED';
+    if (filterStatus === 'PENDING') return !log.is_submitted;
+    if (filterStatus === 'SUBMITTED') return log.is_submitted;
     return true;
   });
 
   const stats = {
-    pending: logs.filter(l => l.status !== 'APPROVED' && l.status !== 'REJECTED').length,
-    approved: logs.filter(l => l.status === 'APPROVED').length,
-    rejected: logs.filter(l => l.status === 'REJECTED').length,
+    pending: logs.filter(l => !l.is_submitted).length,
+    submitted: logs.filter(l => l.is_submitted).length,
     total: logs.length,
+    avgScore: logs.length
+      ? Math.round(logs.reduce((sum, l) => sum + (l.total_weighted_score || 0), 0) / logs.length)
+      : 0,
   };
 
-  const handleOpenReview = (log: WeeklyLog, action: 'APPROVE' | 'REJECT') => {
+  const handleOpenDetails = (log: Evaluation) => {
     setSelectedLog(log);
-    setReviewAction(action);
-    setReviewComment('');
-    setShowReviewModal(true);
+    setShowModal(true);
   };
 
-  const handleSubmitReview = async () => {
-    if (!selectedLog || !reviewAction) return;
-    setLogs(logs.map(log =>
-      log.id === selectedLog.id
-        ? { ...log, status: reviewAction === 'APPROVE' ? 'APPROVED' : 'REJECTED' }
-        : log
-    ));
-    setShowReviewModal(false);
-    setSelectedLog(null);
+  const handleSubmitEvaluation = async (evalToSubmit?: Evaluation) => {
+    const target = evalToSubmit ?? selectedLog;
+    if (!target) return;
+    try {
+      await api.submitEvaluation(target.id);
+      setLogs(logs.map(log =>
+        log.id === target.id ? { ...log, is_submitted: true } : log
+      ));
+    } catch (error) {
+      console.error('Failed to submit evaluation:', error);
+    } finally {
+      setShowModal(false);
+      setSelectedLog(null);
+    }
   };
 
   return (
     <DashboardLayout>
       <PageHeader 
-        title="Weekly Review Board"
-        subtitle="Verify and validate student technical activities and skill acquisition logs."
+        title="Evaluation Board"
+        subtitle="Review formal internship performance evaluations submitted for your students."
         actions={
           <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-            {['PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+            {['PENDING', 'SUBMITTED', 'ALL'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -103,10 +105,10 @@ export default function ReviewsPage() {
       <div className="space-y-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Review Queue" value={stats.pending} icon={<Clock />} color="text-amber-500" highlight={stats.pending > 0} />
-          <StatCard title="Validated" value={stats.approved} icon={<CheckCircle2 />} color="text-emerald-500" />
-          <StatCard title="Sent Back" value={stats.rejected} icon={<AlertCircle />} color="text-rose-500" />
-          <StatCard title="Total Submissions" value={stats.total} icon={<FileText />} color="text-slate-500" />
+          <StatCard title="Pending Submission" value={stats.pending} icon={<Clock />} color="text-amber-500" highlight={stats.pending > 0} />
+          <StatCard title="Submitted" value={stats.submitted} icon={<CheckCircle2 />} color="text-emerald-500" />
+          <StatCard title="Total Evaluations" value={stats.total} icon={<FileText />} color="text-slate-500" />
+          <StatCard title="Avg. Score" value={`${stats.avgScore}%`} icon={<AlertCircle />} color="text-primary" />
         </div>
 
         {loading ? (
@@ -129,59 +131,70 @@ export default function ReviewsPage() {
                 <thead className="bg-slate-50 dark:bg-slate-900/50">
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Week</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Period</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hours</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Activities</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Evaluator</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Technical</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Soft Skills</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Score</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Grade</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
                     <th className="px-6 py-4"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredLogs.map(log => {
-                    const isPending = log.status !== 'APPROVED' && log.status !== 'REJECTED';
-                    return (
-                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px]">
-                              {log.placement?.student?.first_name[0]}{log.placement?.student?.last_name[0]}
-                            </div>
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">{log.placement?.student?.first_name} {log.placement?.student?.last_name}</p>
+                  {filteredLogs.map(log => (
+                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px]">
+                            {log.placement?.student?.first_name?.[0]}{log.placement?.student?.last_name?.[0]}
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Week {log.week_number}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-xs text-slate-600 dark:text-slate-400">{new Date(log.week_end_date).toLocaleDateString()}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{log.hours_worked}h</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{log.activities_performed}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Statusbar status={log.status} />
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {isPending ? (
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all justify-end">
-                              <Button variant="ghost" size="sm" className="h-8 px-3 text-[10px] font-bold text-rose-600 hover:bg-rose-50" onClick={() => handleOpenReview(log, 'REJECT')}>
-                                Reject
-                              </Button>
-                              <Button size="sm" className="h-8 px-3 text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700" onClick={() => handleOpenReview(log, 'APPROVE')}>
-                                Approve
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-[10px] font-bold text-slate-400">Reviewed</span>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            {log.placement?.student?.first_name} {log.placement?.student?.last_name}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          {log.evaluator?.first_name} {log.evaluator?.last_name}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{log.technical_score ?? '—'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{log.soft_skills_score ?? '—'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-bold text-primary">{log.total_weighted_score ?? '—'}%</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded-md text-[10px] font-black bg-primary/10 text-primary">
+                          {log.final_grade || '—'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${
+                          log.is_submitted
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        }`}>
+                          {log.is_submitted ? 'Submitted' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all justify-end">
+                          <Button variant="ghost" size="sm" className="h-8 px-3 text-[10px] font-bold" onClick={() => handleOpenDetails(log)}>
+                            View
+                          </Button>
+                          {!log.is_submitted && (
+                            <Button size="sm" className="h-8 px-3 text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700" onClick={() => handleSubmitEvaluation(log)}>
+                              Submit
+                            </Button>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -189,43 +202,51 @@ export default function ReviewsPage() {
         )}
       </div>
 
-      {/* Review Modal */}
-      {showReviewModal && selectedLog && (
+      {/* Evaluation Detail Modal */}
+      {showModal && selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="w-full max-w-lg p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" variant="panel">
-            <div className={`p-6 border-b border-slate-100 dark:border-slate-800 ${reviewAction === 'APPROVE' ? 'bg-emerald-50/50 dark:bg-emerald-900/20' : 'bg-rose-50/50 dark:bg-rose-900/20'}`}>
-              <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                {reviewAction === 'APPROVE' ? 'Approve Log Entry' : 'Reject Log Entry'}
-              </h2>
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-primary/5">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">Evaluation Details</h2>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
-                Confirming Week {selectedLog.week_number} for {selectedLog.placement?.student?.first_name}
+                {selectedLog.placement?.student?.first_name} {selectedLog.placement?.student?.last_name}
               </p>
             </div>
-            
+
             <div className="p-6 space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {reviewAction === 'APPROVE' 
-                  ? "Are you sure you want to approve this log? This confirms the student's activities and hours for the week."
-                  : "Please provide a reason for rejection so the student can update their log accordingly."}
-              </p>
-              <textarea
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                placeholder="Write your feedback here..."
-                className="w-full p-4 text-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none transition-all min-h-[120px] resize-none"
-              />
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Technical Score', value: selectedLog.technical_score },
+                  { label: 'Soft Skills', value: selectedLog.soft_skills_score },
+                  { label: 'Attendance', value: selectedLog.attendance_score },
+                  { label: 'Conduct', value: selectedLog.conduct_score },
+                ].map(({ label, value }) => (
+                  <div key={label} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+                    <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{value ?? '—'}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5">
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Total Weighted Score</span>
+                <span className="text-2xl font-black text-primary">{selectedLog.total_weighted_score ?? '—'}%</span>
+              </div>
+              {selectedLog.summary_comments && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 p-4 rounded-xl bg-slate-50 dark:bg-slate-900">
+                  {selectedLog.summary_comments}
+                </p>
+              )}
             </div>
 
             <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-              <Button variant="ghost" className="flex-1" onClick={() => setShowReviewModal(false)}>
-                Cancel
+              <Button variant="ghost" className="flex-1" onClick={() => setShowModal(false)}>
+                Close
               </Button>
-              <Button 
-                className={`flex-1 ${reviewAction === 'APPROVE' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}`} 
-                onClick={handleSubmitReview}
-              >
-                Confirm {reviewAction === 'APPROVE' ? 'Approval' : 'Rejection'}
-              </Button>
+              {!selectedLog.is_submitted && (
+                <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => handleSubmitEvaluation()}>
+                  Submit Evaluation
+                </Button>
+              )}
             </div>
           </Card>
         </div>
