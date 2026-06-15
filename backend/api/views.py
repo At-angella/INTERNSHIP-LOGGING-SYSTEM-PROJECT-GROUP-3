@@ -487,7 +487,7 @@ class WeeklyLogViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated, MustChangePassword]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['status', 'placement__academic_department']
+    filterset_fields = ['status', 'placement', 'placement__academic_department']
     ordering_fields = ['week_number', 'submitted_at']
     ordering = ['-week_number']
 

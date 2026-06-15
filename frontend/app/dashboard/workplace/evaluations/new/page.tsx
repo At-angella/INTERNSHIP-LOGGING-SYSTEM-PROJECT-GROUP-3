@@ -50,6 +50,8 @@ function NewEvaluationForm() {
     if (user) fetchPlacements();
   }, [user]);
 
+  const [logsLoading, setLogsLoading] = useState(false);
+
   useEffect(() => {
     if (!selectedPlacementId) {
       setLogs([]);
@@ -58,24 +60,38 @@ function NewEvaluationForm() {
     }
 
     const fetchLogs = async () => {
+      setLogsLoading(true);
       try {
+        // Pass placement as a query param — backend now supports filtering by placement
         const data = await api.getWeeklyLogs({ placement: selectedPlacementId });
-        const allLogs = data.results || data || [];
-        const unreviewedSubmittedLogs = allLogs.filter(
-          (log: WeeklyLog) => 
-            log.placement?.id.toString() === selectedPlacementId &&
-            log.status === 'SUBMITTED' && 
-            !log.supervisor_review
-        );
-        setLogs(unreviewedSubmittedLogs);
-        if (unreviewedSubmittedLogs.length > 0) {
-          const exists = unreviewedSubmittedLogs.some((l: WeeklyLog) => l.id.toString() === queryLogId);
-          setSelectedLogId(exists ? queryLogId : unreviewedSubmittedLogs[0].id.toString());
+        const allLogs: WeeklyLog[] = data.results || data || [];
+
+        // Keep SUBMITTED logs that have not been reviewed yet
+        // (compare as strings to avoid type mismatch between number IDs and string state)
+        const reviewableLogs = allLogs.filter((log: WeeklyLog) => {
+          const placementMatch =
+            log.placement?.id?.toString() === selectedPlacementId.toString();
+          const isReviewable = log.status === 'SUBMITTED' && !log.supervisor_review;
+          return placementMatch && isReviewable;
+        });
+
+        setLogs(reviewableLogs);
+
+        if (reviewableLogs.length > 0) {
+          // Honour query-param pre-selection if it's still in the list
+          const exists = reviewableLogs.some(
+            (l: WeeklyLog) => l.id.toString() === queryLogId
+          );
+          setSelectedLogId(exists ? queryLogId : reviewableLogs[0].id.toString());
         } else {
           setSelectedLogId('');
         }
       } catch (err) {
-        console.error('Failed to fetch logs:', err);
+        console.error('Failed to fetch logs for placement:', err);
+        setLogs([]);
+        setSelectedLogId('');
+      } finally {
+        setLogsLoading(false);
       }
     };
 
@@ -180,11 +196,13 @@ function NewEvaluationForm() {
                   <select
                     value={selectedLogId}
                     onChange={(e) => setSelectedLogId(e.target.value)}
-                    disabled={!selectedPlacementId}
+                    disabled={!selectedPlacementId || logsLoading}
                     className="w-full px-4 py-3 text-sm font-bold rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {!selectedPlacementId ? (
                       <option value="">Select intern first</option>
+                    ) : logsLoading ? (
+                      <option value="">Loading logs...</option>
                     ) : logs.length === 0 ? (
                       <option value="">No pending weekly logs to evaluate</option>
                     ) : (
