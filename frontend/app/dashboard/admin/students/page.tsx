@@ -178,12 +178,12 @@ export default function StudentsAdminPage() {
                         <td className="px-6 py-4 text-right">
                           {placement && isPlacementActive && (
                             <Button
-                              size="sm"
+                              size="md"
                               className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] py-1 px-3.5 uppercase tracking-wider rounded-xl transition-all"
                               disabled={updatingId === placement.id}
                               onClick={() => handleMarkCompleted(placement.id)}
                             >
-                              {updatingId === placement.id ? 'Saving...' : 'Complete Placement'}
+                              {updatingId === placement.id ? 'Saving...' : 'Internship Completed'}
                             </Button>
                           )}
                         </td>
