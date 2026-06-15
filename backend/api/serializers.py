@@ -418,11 +418,19 @@ class PlacementStatusUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
-        instance.status = validated_data['status']
-        if validated_data['status'] == 'APPROVED':
+        new_status = validated_data['status']
+
+        # Use update_fields to bypass model.clean() which runs overlap validation.
+        # A status-only update should never trigger date overlap checks.
+        update_fields = ['status']
+        instance.status = new_status
+
+        if new_status == 'APPROVED':
             instance.approved_by = request.user
             instance.approved_at = timezone.now()
-        instance.save()
+            update_fields += ['approved_by', 'approved_at']
+
+        instance.save(update_fields=update_fields)
         return instance
 
 # WEEKLY LOG SERIALIZERS
