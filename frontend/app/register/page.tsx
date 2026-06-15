@@ -9,6 +9,7 @@ import {
   User, Mail, Hash, BookOpen, 
   Phone, Building, ArrowRight, Lock
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 const Register = () => {
   const router = useRouter();
@@ -39,9 +40,10 @@ const Register = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!emailRegex.test(formData.email)) newErrors.email = 'Enter a valid email';
+    else if (!formData.email.endsWith('@students.mak.ac.ug')) newErrors.email = 'Must use your university student email (@students.mak.ac.ug)';
 
     if (!formData.password.trim()) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
 
     if (!formData.confirmPassword.trim()) newErrors.confirmPassword = 'Confirm password is required';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
@@ -76,11 +78,23 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await api.registerStudent({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirm_password: formData.confirmPassword,
+        phone_number: formData.phoneNumber,
+        student_id: formData.studentId,
+        registration_number: formData.registrationNumber,
+        college: formData.college,
+        program: formData.program,
+      });
       setSuccessMessage('Registration successful! Redirecting to login...');
       setTimeout(() => router.push('/login'), 2000);
-    } catch (error) {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+    } catch (error: any) {
+      const msg = error?.message || 'Registration failed. Please try again.';
+      setErrors({ submit: msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -139,12 +153,12 @@ const Register = () => {
               </div>
 
               <Input
-                label="Email Address"
+                label="University Email (@students.mak.ac.ug)"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="firstname.lastname@students.mak.ac.ug"
+                placeholder="e.g. john.doe@students.mak.ac.ug"
                 error={errors.email}
                 icon={<Mail className="w-5 h-5" />}
               />
