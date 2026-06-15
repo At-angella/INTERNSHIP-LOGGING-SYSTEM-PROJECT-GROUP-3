@@ -7,7 +7,7 @@ import { DashboardLayout, PageHeader, Statusbar } from '@/components/layout';
 import { Card, Button } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import { InternshipPlacement, WeeklyLog, Evaluation } from '@/lib/types';
+import { InternshipPlacement, WeeklyLog } from '@/lib/types';
 import Link from 'next/link';
 import { 
   Users, 
@@ -27,22 +27,19 @@ export default function WorkplaceSupervisorDashboard() {
   const { user } = useAuth();
   const [placements, setPlacements] = useState<InternshipPlacement[]>([]);
   const [weeklyLogs, setWeeklyLogs] = useState<WeeklyLog[]>([]);
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [placementsData, logsData, evalsData] = await Promise.all([
+        const [placementsData, logsData] = await Promise.all([
           api.getPlacements(),
           api.getWeeklyLogs(),
-          api.getEvaluations()
         ]);
         setPlacements(placementsData.results?.slice(0, 10) || placementsData.slice(0, 10) || []);
         setWeeklyLogs(logsData.results?.slice(0, 10) || logsData.slice(0, 10) || []);
-        setEvaluations(evalsData.results || evalsData || []);
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
