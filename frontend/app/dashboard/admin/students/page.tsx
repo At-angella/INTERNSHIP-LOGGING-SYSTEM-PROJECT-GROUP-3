@@ -129,7 +129,12 @@ export default function StudentsAdminPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredStudents.map(student => {
-                    const placement = placements.find(p => p.student?.id === student.id);
+                    const placement = placements.find(p => {
+                      const s = p.student as any;
+                      if (!s) return false;
+                      if (typeof s === 'number') return s === student.id;
+                      return s.id === student.id || s.email === student.email;
+                    });
                     const isPlacementActive = placement?.status === 'ACTIVE';
 
                     return (
