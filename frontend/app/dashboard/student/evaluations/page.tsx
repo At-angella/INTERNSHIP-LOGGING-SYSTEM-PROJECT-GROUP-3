@@ -82,10 +82,10 @@ function EvaluationDetailCard({ evalu }: { evalu: Evaluation }) {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
             <div>
               <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4">Final Academic Standing</p>
-              <h2 className="text-8xl font-black leading-none">{evalu.final_grade}</h2>
+              <h2 className="text-8xl font-black leading-none">{evalu.final_grade || 'N/A'}</h2>
               <div className="mt-6 flex items-center gap-4">
                 <div className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold">
-                  Total Score: {evalu.total_weighted_score.toFixed(1)}/100
+                  Total Score: {typeof evalu.total_weighted_score === 'number' ? evalu.total_weighted_score.toFixed(1) : '0.0'}/100
                 </div>
                 <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
                   <ShieldCheck className="w-4 h-4" />
@@ -118,16 +118,16 @@ function EvaluationDetailCard({ evalu }: { evalu: Evaluation }) {
           <div className="space-y-6">
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
               <p className="text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed">
-                "{evalu.summary_comments}"
+                "{evalu.summary_comments || 'No comments provided.'}"
               </p>
             </div>
             <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
               <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                {evalu.placement?.academic_supervisor?.first_name[0]}
+                {evalu.placement?.academic_supervisor?.first_name?.[0] || 'S'}
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900 dark:text-white">
-                  {evalu.placement?.academic_supervisor?.first_name} {evalu.placement?.academic_supervisor?.last_name}
+                  {evalu.placement?.academic_supervisor?.first_name || 'Academic'} {evalu.placement?.academic_supervisor?.last_name || 'Supervisor'}
                 </p>
                 <p className="text-[10px] text-slate-500 font-medium">Academic Supervisor</p>
               </div>
@@ -163,13 +163,13 @@ function EvaluationDetailCard({ evalu }: { evalu: Evaluation }) {
   );
 }
 
-function QuickMetric({ label, value }: { label: string, value: number }) {
+function QuickMetric({ label, value }: { label: string, value: number | null | undefined }) {
   return (
     <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 min-w-[120px]">
       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
       <div className="flex items-baseline gap-1">
-        <span className="text-xl font-black">{value}</span>
-        <span className="text-[10px] text-slate-500">/25</span>
+        <span className="text-xl font-black">{typeof value === 'number' ? value : '0'}</span>
+        <span className="text-[10px] text-slate-500">/100</span>
       </div>
     </div>
   );
