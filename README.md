@@ -15,10 +15,10 @@ Welcome to the official repository and submission documentation for the **Intern
 
 | Role | Username / Email | Password | Access scope |
 |---|---|---|---|
-| **System Administrator** | `admin@iles.com` | `AdminPass123` | Placement Approval, Supervisor Registry, System-Wide Settings |
-| **Academic Supervisor** | `academic@iles.com` | `AcademicPass123` | Log Approval, Performance evaluations, Student Grade Portfolios |
-| **Workplace Supervisor** | `workplace@iles.com` | `WorkplacePass123` | Weekly Logbook Reviews, Workplace Performance Reviews |
-| **Intern (Student)** | `student@iles.com` | `StudentPass123` | Daily Logging, Weekly Submissions, Performance Portfolio View |
+| **System Administrator** | `admin.intern@mak.ac.ug` | `admin.intern` | Placement Approval, Supervisor Registry, System-Wide Settings |
+| **Academic Supervisor** | `jane.nakato@mak.ac.ug` | `Super@1234` | Log Approval, Performance evaluations, Student Grade Portfolios |
+| **Workplace Supervisor** | `peter.ssemakula@mak.ac.ug` | `Work@1234` | Weekly Logbook Reviews, Workplace Performance Reviews |
+| **Intern (Student)** | `daniel.otim@students.mak.ac.ug` | `Student@1234` | Daily Logging, Weekly Submissions, Performance Portfolio View |
 
 ---
 
